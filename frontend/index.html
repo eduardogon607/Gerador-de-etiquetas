@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Etiquetas</title>
+    <style>
+        /* RESET */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* CORES E VARIÁVEIS */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent: #06d6a0;
+            --text: #1e293b;
+            --text-light: #64748b;
+        }
+        
+        /* BODY E CONTAINER PRINCIPAL */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            min-height: calc(100vh - 40px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        /* HEADER - SE ISSO APARECER AZUL, ESTÁ FUNCIONANDO! */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 3rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* TABS */
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 6px;
+            gap: 4px;
+        }
+        
+        .tab {
+            padding: 12px 28px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        /* CONTEÚDO PRINCIPAL */
+        .main-content {
+            padding: 3rem;
+            background: #f8f9fa;
+            min-height: 500px;
+        }
+        
+        /* CARDS BÁSICOS */
+        .welcome-card, .guide-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-card h2 {
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+        
+        /* GRID DE ESTATÍSTICAS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text-light);
+        }
+        
+        /* BOTÕES */
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .action-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <!-- SEU HTML AQUI (o mesmo que você já tem) -->
+    <div class="container">
+        <header class="header">
+            <h1>🏷️ Sistema de Etiquetas</h1>
+
+          <nav class="tabs">
+    <a href="/" class="tab active">Início</a>
+    <a href="/upload" class="tab">Uploads</a>
+    <a href="/generate" class="tab">Gerar Etiquetas</a>
+</nav>
+
+        </header>
+
+        <main class="main-content">
+            <section class="welcome-card">
+                <h2>Bem-vindo ao Sistema de Etiquetas! 🎉</h2>
+                <p>Faça upload de suas planilhas Excel e gere etiquetas personalizadas de forma rápida e fácil.</p>
+            </section>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Planilhas Processadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏷️</div>
+                    <div class="stat-number">1.247</div>
+                    <div class="stat-label">Etiquetas Geradas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎨</div>
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Templates</div>
+                </div>
+            </div>
+
+            <section class="guide-card">
+                <h3>📋 Como Usar o Sistema:</h3>
+                <ol class="guide-steps">
+                    <li><strong>Upload de Planilhas:</strong> Vá na aba "Uploads"</li>
+                    <li><strong>Configurar Etiquetas:</strong> Selecione a planilha</li>
+                    <li><strong>Gerar e Baixar:</strong> Pronto! PDF para download</li>
+                </ol>
+            </section>
+
+            <div class="quick-actions">
+                <a href="upload.html" class="action-button">📤 Fazer Upload</a>
+                <a href="generate.html" class="action-button">🏷️ Gerar Etiquetas</a>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload - Sistema de Etiquetas</title>
+    <style>
+        /* Reset e Configurações Gerais */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f8fafc;
+            --accent: #06d6a0;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 2rem 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: inline-flex;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 6px;
+            gap: 4px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tab {
+            padding: 12px 28px;
+            color: white;
+            text-decoration: none;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: var(--shadow);
+            transform: translateY(-1px);
+        }
+
+        /* Conteúdo Principal */
+        .main-content {
+            padding: 3rem;
+            background: var(--secondary);
+            min-height: calc(100vh - 200px);
+        }
+
+        /* Área de Upload */
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            text-align: center;
+            background: rgba(102, 126, 234, 0.05);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #4f46e5;
+        }
+
+        .upload-area.dragover {
+            background: rgba(102, 126, 234, 0.15);
+            border-color: #4f46e5;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .upload-text h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .upload-text p {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-button {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .upload-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Lista de Arquivos */
+        .file-list {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .file-list h3 {
+            color: var(--text);
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-list h3::before {
+            content: '📁';
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: var(--secondary);
+            transform: translateX(8px);
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-info strong {
+            color: var(--text);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-info p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .file-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🏷️ Sistema de Etiquetas</h1>
+            <nav class="tabs">
+                <a href="/" class="tab">Início</a>
+                <a href="/upload" class="tab active">Uploads</a>
+                <a href="/generate" class="tab">Gerar Etiquetas</a>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <!-- Área de Upload -->
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📤</div>
+                <div class="upload-text">
+                    <h3>Arraste sua planilha Excel aqui</h3>
+                    <p>ou clique para selecionar o arquivo</p>
+                    <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;">
+                    <button class="upload-button" onclick="document.getElementById('fileInput').click()">
+                        Selecionar Arquivo Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de Arquivos Processados -->
+            <div class="file-list">
+                <h3>Planilhas Processadas</h3>
+                <div id="filesContainer">
+                    <div class="empty-state">
+                        <span class="icon">📄</span>
+                        <p>Nenhuma planilha processada ainda</p>
+                        <p>Faça upload de uma planilha Excel para começar</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // URL do backend
+        const API_URL = 'http://localhost:3000/api';
+
+        // Elementos da interface
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const filesContainer = document.getElementById('filesContainer');
+
+        // Eventos de Drag & Drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileUpload(files[0]);
+            }
+        });
+
+        // Upload via clique
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        // ✅ FUNÇÃO CORRIGIDA: Fazer upload
+        async function handleFileUpload(file) {
+            if (!file.name.match(/\.(xlsx|xls)$/)) {
+                alert('❌ Por favor, selecione um arquivo Excel (.xlsx ou .xls)');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('spreadsheet', file);
+
+            try {
+                showLoading();
+
+                console.log('📤 Enviando arquivo para o backend...');
+                
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                console.log('📥 Resposta do backend:', result);
+
+                if (result.success) {
+                    // ✅ AGORA ATUALIZA A LISTA IMEDIATAMENTE
+                    await updateFileListAfterUpload(result.data);
+                    alert('✅ ' + result.message);
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            } catch (error) {
+                console.error('Erro no upload:', error);
+                alert('❌ Erro ao fazer upload: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ✅ NOVA FUNÇÃO: Atualizar lista após upload
+        async function updateFileListAfterUpload(newFileData) {
+            try {
+                console.log('🔄 Atualizando lista de arquivos...');
+                const response = await fetch(`${API_URL}/spreadsheets`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('📊 Arquivos carregados:', result.spreadsheets);
+                    updateFileList(result.spreadsheets);
+                } else {
+                    console.error('❌ API retornou success: false');
+                    // Mesmo assim, tenta adicionar o novo arquivo
+                    const currentFiles = await getCurrentFiles();
+                    const updatedFiles = [newFileData, ...currentFiles];
+                    updateFileList(updatedFiles);
+                }
+            } catch (error) {
+                console.error('❌ Erro ao atualizar lista:', error);
+                // Em caso de erro, adiciona manualmente o novo arquivo
+                const currentFiles = await getCurrentFiles();
+                const updatedFiles = [newFileData, ...currentFiles];
+                updateFileList(updatedFiles);
+            }
+        }
+
+        // ✅ FUNÇÃO AUXILIAR: Obter arquivos atuais
+        async function getCurrentFiles() {
+            try {
+                const response = await fetch(`${API_URL}/spreadsheets`);
+                const result = await response.json();
+                return result.success ? result.spreadsheets : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        // ✅ FUNÇÃO: Carregar planilhas existentes
+        async function loadSpreadsheets() {
+            try {
+                console.log('🔄 Carregando planilhas...');
+                const response = await fetch(`${API_URL}/spreadsheets`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('📊 Resposta da API:', result);
+                
+                if (result.success) {
+                    updateFileList(result.spreadsheets);
+                } else {
+                    console.error('❌ API retornou success: false');
+                    updateFileList([]);
+                }
+            } catch (error) {
+                console.error('❌ Erro ao carregar planilhas:', error);
+                updateFileList([]);
+            }
+        }
+
+        // ✅ FUNÇÃO: Atualizar lista de arquivos na interface
+        function updateFileList(spreadsheets) {
+            console.log('🎨 Atualizando interface com:', spreadsheets.length, 'arquivos');
+            
+            if (spreadsheets.length === 0) {
+                filesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">📄</span>
+                        <p>Nenhuma planilha processada ainda</p>
+                        <p>Faça upload de uma planilha Excel para começar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filesContainer.innerHTML = spreadsheets.map(sheet => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <strong>${sheet.fileName}</strong>
+                        <p>Carregado em: ${new Date(sheet.uploadDate).toLocaleDateString()} - ${sheet.records} registros</p>
+                        <p>Colunas: ${sheet.columns ? sheet.columns.map(col => col.name).join(', ') : 'Nenhuma'}</p>
+                    </div>
+                    <div class="file-status status-success">
+                        ✓ Processado
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ✅ FUNÇÕES AUXILIARES: Loading
+        function showLoading() {
+            uploadArea.innerHTML = `
+                <div class="upload-icon">⏳</div>
+                <div class="upload-text">
+                    <h3>Processando arquivo...</h3>
+                    <p>Aguarde enquanto processamos sua planilha</p>
+                </div>
+            `;
+            uploadArea.style.cursor = 'default';
+        }
+
+        function hideLoading() {
+            uploadArea.innerHTML = `
+                <div class="upload-icon">📤</div>
+                <div class="upload-text">
+                    <h3>Arraste sua planilha Excel aqui</h3>
+                    <p>ou clique para selecionar o arquivo</p>
+                    <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;">
+                    <button class="upload-button" onclick="document.getElementById('fileInput').click()">
+                        Selecionar Arquivo Excel
+                    </button>
+                </div>
+            `;
+            uploadArea.style.cursor = 'pointer';
+            
+            // Re-atachar eventos
+            const newFileInput = document.getElementById('fileInput');
+            newFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileUpload(e.target.files[0]);
+                }
+            });
+        }
+
+        // ✅ FUNÇÃO DE DEBUG: Testar conexão
+        async function debugAPI() {
+            try {
+                console.log('🔍 Debug: Testando API...');
+                const testResponse = await fetch(`${API_URL}/test`);
+                const testData = await testResponse.json();
+                console.log('✅ API Test:', testData);
+                return true;
+            } catch (error) {
+                console.error('❌ Debug Error:', error);
+                return false;
+            }
+        }
+
+        // ✅ CARREGAR quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Página carregada, iniciando sistema...');
+            debugAPI().then(success => {
+                if (success) {
+                    loadSpreadsheets();
+                } else {
+                    console.error('❌ Não foi possível conectar com a API');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

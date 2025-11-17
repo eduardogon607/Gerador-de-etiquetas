@@ -1,0 +1,915 @@
+{
+  "id": 1763055526162,
+  "originalName": "Pasta1.xlsx",
+  "uploadDate": "2025-11-13T17:38:46.162Z",
+  "data": [
+    {
+      "_id": "row_2",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 1,
+      "col_4": "COMBITRANS / LSL",
+      "col_5": "RACK",
+      "col_6": {
+        "richText": [
+          {
+            "font": {
+              "bold": true,
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "NLE-2157"
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": " / RBW-3A27"
+          }
+        ]
+      },
+      "col_7": "1960 / MTO: 13023",
+      "col_8": 72,
+      "col_9": "RACK / ITJ",
+      "col_10": 22752,
+      "col_11": 0.01,
+      "col_12": "2025-11-10T19:23:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "COMBITRANS"
+    },
+    {
+      "_id": "row_3",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 2,
+      "col_4": "LSL",
+      "col_5": "RACK",
+      "col_6": {
+        "richText": [
+          {
+            "font": {
+              "bold": true,
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "BTO-1J20"
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": " / MCM-3H83"
+          }
+        ]
+      },
+      "col_7": "2955 / MTO: 6265",
+      "col_8": 67,
+      "col_9": "RACK / REC",
+      "col_10": 19824,
+      "col_11": 0.01,
+      "col_12": "2025-09-11T06:35:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "COMBITRANS"
+    },
+    {
+      "_id": "row_4",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 3,
+      "col_4": "BBT",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "OGK-2I77 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "OMQ-2B02"
+          }
+        ]
+      },
+      "col_7": 1826,
+      "col_8": "23 PALETES",
+      "col_9": "LATICINIOS ",
+      "col_10": 24603,
+      "col_11": 279259.04,
+      "col_12": "2025-11-10T00:18:00.000Z",
+      "col_13": "2025-11-10T16:57:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "NUBIA"
+    },
+    {
+      "_id": "row_5",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 4,
+      "col_4": "COMPAR",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "OMK-9954 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "JAB-4J38"
+          }
+        ]
+      },
+      "col_7": "24807 / 24808",
+      "col_8": "28 PALETES",
+      "col_9": "AGUA",
+      "col_10": 32063.47,
+      "col_11": 37253.4,
+      "col_12": "2025-11-10T21:00:00.000Z",
+      "col_14": "LIBERADO",
+      "col_15": "COMBITRANS"
+    },
+    {
+      "_id": "row_6",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 5,
+      "col_4": "COMPAR",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "JAF-9G36 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "MDL-9709"
+          }
+        ]
+      },
+      "col_7": "24810 / 24811",
+      "col_8": "28 PALETES",
+      "col_9": "AGUA",
+      "col_10": 32063.47,
+      "col_11": 30603.52,
+      "col_12": "2025-11-10T21:35:00.000Z",
+      "col_14": "LIBERADO",
+      "col_15": "COMBITRANS"
+    },
+    {
+      "_id": "row_7",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 6,
+      "col_4": "BRASIL NORTE",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "MIO-5B45 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "JVX-1328"
+          }
+        ]
+      },
+      "col_7": "24795 / 24796",
+      "col_8": "28 PALETES",
+      "col_9": "AGUA",
+      "col_10": 32063,
+      "col_11": 36062.33,
+      "col_12": "2025-11-10T16:52:00.000Z",
+      "col_14": "LIBERADO",
+      "col_15": "COMBITRANS"
+    },
+    {
+      "_id": "row_8",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 7,
+      "col_4": "BRASIL NORTE",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "font": {
+              "bold": true,
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "JSW-4F26 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "OZR-8E37"
+          }
+        ]
+      },
+      "col_7": "24805 / 24806",
+      "col_8": "28 PALETES",
+      "col_9": "AGUA",
+      "col_10": 32063,
+      "col_11": 36062.33,
+      "col_12": "2025-11-10T21:05:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "COMBITRANS"
+    },
+    {
+      "_id": "row_9",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 8,
+      "col_4": "TRANSUL",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "font": {
+              "bold": true,
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "IZF-9H13 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "RYC-2J10"
+          }
+        ]
+      },
+      "col_7": 71647,
+      "col_8": "VOLUMES",
+      "col_9": "LINGOTE",
+      "col_10": 34769,
+      "col_11": 527805.59,
+      "col_12": "2025-11-10T21:25:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_10",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 9,
+      "col_4": "TRANSUL",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "font": {
+              "bold": true,
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "ROM-9F39 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "ROT-5I79 (B)"
+          }
+        ]
+      },
+      "col_7": 71702,
+      "col_8": "VOLUMES",
+      "col_9": "LINGOTE",
+      "col_10": 24761,
+      "col_11": 390223.76,
+      "col_12": "2025-11-10T19:45:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_11",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 10,
+      "col_4": "TRANSUL",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "font": {
+              "bold": true,
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "ROM-9F39 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "ROT-5I80 (B)"
+          }
+        ]
+      },
+      "col_7": 71702,
+      "col_8": "VOLUMES",
+      "col_9": "LINGOTE",
+      "col_10": 24761,
+      "col_11": 390223.76,
+      "col_12": "2025-11-10T19:45:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_12",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 11,
+      "col_4": "TRANSUL",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "font": {
+              "bold": true,
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "SMU-8D55 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "SMU-0F44 (B)"
+          }
+        ]
+      },
+      "col_7": 71703,
+      "col_8": "VOLUMES",
+      "col_9": "LINGOTE",
+      "col_10": 24824.5,
+      "col_11": 391224.49,
+      "col_12": "2025-11-10T19:50:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_13",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 12,
+      "col_4": "TRANSUL",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "font": {
+              "bold": true,
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "SMU-8D55 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "SMU-0F47 (B)"
+          }
+        ]
+      },
+      "col_7": 71703,
+      "col_8": "VOLUMES",
+      "col_9": "LINGOTE",
+      "col_10": 24825,
+      "col_11": 391224.49,
+      "col_12": "2025-11-10T19:50:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_14",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 13,
+      "col_4": "TRANSUL",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "ROU-9J31 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "ROZ-3J28 (B)"
+          }
+        ]
+      },
+      "col_7": 71706,
+      "col_8": "VOLUMES",
+      "col_9": "LINGOTE",
+      "col_10": 24740,
+      "col_11": 389892.8,
+      "col_12": "2025-11-10T19:40:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_15",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 14,
+      "col_4": "TRANSUL",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "ROU-9J31 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "ROZ-3J32 (B)"
+          }
+        ]
+      },
+      "col_7": 71706,
+      "col_8": "VOLUMES",
+      "col_9": "LINGOTE",
+      "col_10": 24740,
+      "col_11": 389892.8,
+      "col_12": "10/112025 19:40",
+      "col_14": "Y-6341",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_16",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 15,
+      "col_4": "ALFA COMERCIAL",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "font": {
+              "bold": true,
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "NVZ-9500 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "EJY-0I68"
+          }
+        ]
+      },
+      "col_7": 193668,
+      "col_8": "BAGS",
+      "col_9": "FERTILIZANTE",
+      "col_10": 35052,
+      "col_11": 50365,
+      "col_12": "2025-11-11T02:10:00.000Z",
+      "col_13": "2025-11-11T07:05:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_17",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 16,
+      "col_4": "ALFA COMERCIAL",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "font": {
+              "bold": true,
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "LXT-0A02 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial"
+            },
+            "text": "MOM-8F10"
+          }
+        ]
+      },
+      "col_7": 193664,
+      "col_8": "BAGS",
+      "col_9": "FERTILIZANTE",
+      "col_10": 31046,
+      "col_11": 44609,
+      "col_12": "2025-11-11T03:45:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_18",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 17,
+      "col_4": "DESCARTE CORRETO",
+      "col_5": "DIVERSOS",
+      "col_6": "S/PALCA",
+      "col_7": "158 / 159 / 160 / 161",
+      "col_8": "16 PALETES",
+      "col_9": "SUCATA ELETRONICA",
+      "col_10": 7625,
+      "col_11": 7625,
+      "col_12": "2025-11-10T19:00:00.000Z",
+      "col_14": "LIBERADO",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_19",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 18,
+      "col_4": "COOPERCARGA",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "SXG-1E50 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "theme": 1
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "SXF-8I31"
+          }
+        ]
+      },
+      "col_7": 28266,
+      "col_8": "PALETES",
+      "col_9": "COOPERCARGA",
+      "col_10": 30899.11,
+      "col_11": 312471.47000000003,
+      "col_12": "2025-11-07T23:46:00.000Z",
+      "col_13": "2025-11-10T13:11:00.000Z",
+      "col_14": "Y-6341",
+      "col_15": "COMBITRANS"
+    },
+    {
+      "_id": "row_20",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 19,
+      "col_4": "MEY TRANSPORTES",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "FKK-0J43 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "CFZ-9H95"
+          }
+        ]
+      },
+      "col_7": 1228,
+      "col_8": "20 PALETES",
+      "col_9": "LATA VAZIA",
+      "col_10": 2802,
+      "col_11": 58637.16,
+      "col_12": "2025-11-11T07:00:00.000Z",
+      "col_14": "LIBERADO",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_21",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 20,
+      "col_4": "MEY TRANSPORTES",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "MCC-7285 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "HHK-5228"
+          }
+        ]
+      },
+      "col_7": 1229,
+      "col_8": "20 PALETES",
+      "col_9": "LATA VAZIA",
+      "col_10": 2802,
+      "col_11": 58637.16,
+      "col_12": "2025-11-10T23:55:00.000Z",
+      "col_14": "LIBERADO",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_22",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 21,
+      "col_4": "MEY TRANSPORTES",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "BYF-4B64 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "GDH-9C51"
+          }
+        ]
+      },
+      "col_7": 1230,
+      "col_8": "20 PALETES",
+      "col_9": "LATA VAZIA",
+      "col_10": 2802,
+      "col_11": 58637.16,
+      "col_12": "2025-11-10T23:50:00.000Z",
+      "col_14": "LIBERADO",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_23",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 22,
+      "col_4": "COMPANHIA DO CIMENTO",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "RYD-5G28 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "RDV-6B56 (B)"
+          }
+        ]
+      },
+      "col_7": "728013 / 727991",
+      "col_8": "BAGS",
+      "col_9": "CIMENTO",
+      "col_10": 20870,
+      "col_11": 21851.93,
+      "col_12": "2025-11-11T07:30:00.000Z",
+      "col_14": "LIBERADO",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_24",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 23,
+      "col_4": "COMPANHIA DO CIMENTO",
+      "col_5": "DIVERSOS",
+      "col_6": {
+        "richText": [
+          {
+            "text": "RYD-5G28 / "
+          },
+          {
+            "font": {
+              "size": 10,
+              "color": {
+                "argb": "FF000000"
+              },
+              "name": "Arial",
+              "family": 2
+            },
+            "text": "RDV-6C76 (B)"
+          }
+        ]
+      },
+      "col_7": "728013 / 727991",
+      "col_8": "BAGS",
+      "col_9": "CIMENTO",
+      "col_10": 28040,
+      "col_11": 28884.28,
+      "col_12": "2025-11-11T07:30:00.000Z",
+      "col_14": "LIBERADO",
+      "col_15": "SALES"
+    },
+    {
+      "_id": "row_25",
+      "col_1": "2025-11-10T00:00:00.000Z",
+      "col_2": 11,
+      "col_3": 24
+    }
+  ],
+  "columns": [
+    {
+      "name": "DATA",
+      "key": "col_1"
+    },
+    {
+      "name": "MÊS",
+      "key": "col_2"
+    },
+    {
+      "name": "POSIÇÃO",
+      "key": "col_3"
+    },
+    {
+      "name": "CONTROLE DE CARGA PARA EMBARQUE - YOKOHAMA Y-6341",
+      "key": "col_4"
+    },
+    {
+      "name": "TIPO",
+      "key": "col_5"
+    },
+    {
+      "name": "PLACAS",
+      "key": "col_6"
+    },
+    {
+      "name": "MDF/DANFE",
+      "key": "col_7"
+    },
+    {
+      "name": "QDE",
+      "key": "col_8"
+    },
+    {
+      "name": "PRODUTO",
+      "key": "col_9"
+    },
+    {
+      "name": "PESO",
+      "key": "col_10"
+    },
+    {
+      "name": "VALOR AVERBADO ",
+      "key": "col_11"
+    },
+    {
+      "name": "CHEGADA",
+      "key": "col_12"
+    },
+    {
+      "name": "DATA DESCARGA",
+      "key": "col_13"
+    },
+    {
+      "name": "STATUS",
+      "key": "col_14"
+    },
+    {
+      "name": "COMERCIAL",
+      "key": "col_15"
+    }
+  ],
+  "filePath": "uploads\\1763055526080-407185354.xlsx"
+}
