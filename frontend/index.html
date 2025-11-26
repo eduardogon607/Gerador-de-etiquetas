@@ -5,204 +5,1345 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Etiquetas</title>
     <style>
-        /* RESET */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        /* CORES E VARIÁVEIS */
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --accent: #06d6a0;
-            --text: #1e293b;
-            --text-light: #64748b;
+        /* RESET MOBILE */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
         }
         
-        /* BODY E CONTAINER PRINCIPAL */
+        :root {
+            --primary: #6366f1; 
+            --primary-dark: #4f46e5; 
+            --secondary: #f8fafc;
+            --accent: #06d6a0; 
+            --text: #1e293b; 
+            --text-light: #64748b;
+            --border: #e2e8f0; 
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --danger: #ef4444;
+        }
+        
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: var(--text);
-            padding: 20px;
+            min-height: 100vh; 
+            color: var(--text); 
+            line-height: 1.5;
+            padding: 0;
+            margin: 0;
         }
         
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
             background: white;
-            min-height: calc(100vh - 40px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+            min-height: 100vh;
+            max-width: 100%;
+            overflow-x: hidden;
         }
         
-        /* HEADER - SE ISSO APARECER AZUL, ESTÁ FUNCIONANDO! */
+        /* HEADER MOBILE */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem 3rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white; 
+            padding: 1rem;
         }
         
         .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        /* TABS */
-        .tabs {
-            display: flex;
-            background: rgba(255,255,255,0.2);
-            border-radius: 12px;
-            padding: 6px;
-            gap: 4px;
-        }
-        
-        .tab {
-            padding: 12px 28px;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        
-        .tab:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .tab.active {
-            background: white;
-            color: #667eea;
-            font-weight: bold;
-        }
-        
-        /* CONTEÚDO PRINCIPAL */
-        .main-content {
-            padding: 3rem;
-            background: #f8f9fa;
-            min-height: 500px;
-        }
-        
-        /* CARDS BÁSICOS */
-        .welcome-card, .guide-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .welcome-card h2 {
-            color: var(--text);
+            font-size: 1.4rem;
+            font-weight: 700; 
             margin-bottom: 1rem;
         }
         
-        /* GRID DE ESTATÍSTICAS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+        /* TABS MOBILE */
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px; 
+            padding: 3px;
+            gap: 2px;
         }
         
-        .stat-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
+        .tab {
+            padding: 10px 12px;
+            color: white; 
+            text-decoration: none;
+            background: transparent; 
+            border: none; 
+            border-radius: 8px;
+            cursor: pointer; 
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex: 1;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .stat-icon {
+        .tab.active {
+            background: white; 
+            color: var(--primary);
+        }
+        
+        /* MAIN CONTENT MOBILE */
+        .main-content { 
+            padding: 1rem;
+            background: var(--secondary); 
+            min-height: calc(100vh - 140px);
+        }
+        
+        .config-card, .preview-card {
+            background: white; 
+            padding: 1.5rem 1rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow); 
+            margin-bottom: 1rem; 
+            border: 1px solid var(--border);
+        }
+        
+        .config-card h2, .preview-card h2 {
+            color: var(--text); 
+            margin-bottom: 1rem; 
+            font-size: 1.3rem;
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+        }
+        
+        /* FORM MOBILE */
+        .form-group { 
+            margin-bottom: 1.5rem; 
+        }
+        
+        .form-group label {
+            display: block; 
+            margin-bottom: 0.5rem; 
+            font-weight: 600; 
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+        
+        .form-select, .form-input {
+            width: 100%; 
+            padding: 12px 14px; 
+            border: 2px solid var(--border);
+            border-radius: 8px; 
+            font-size: 1rem; 
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-input-small {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 1rem;
+        }
+        
+        /* COLUNAS MOBILE */
+        .columns-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem; 
+            margin-top: 1rem;
+        }
+        
+        .column-item {
+            background: var(--secondary); 
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .column-item label {
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+            font-weight: normal; 
+            margin-bottom: 0; 
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        
+        /* PREVIEW MOBILE */
+        .preview-area {
+            background: white; 
+            border: 2px dashed var(--border); 
+            border-radius: 12px;
+            padding: 1.5rem; 
+            min-height: 200px; 
+            text-align: center;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+        
+        .preview-placeholder { 
+            color: var(--text-light); 
+        }
+        
+        .label-preview {
+            background: white; 
+            border: 2px solid var(--primary); 
+            border-radius: 8px;
+            padding: 1rem; 
+            margin: 0.5rem; 
+            display: inline-block;
+            box-shadow: var(--shadow); 
+            min-width: 160px;
+            max-width: 100%;
+        }
+        
+        /* BOTÕES MOBILE */
+        .action-buttons { 
+            display: flex; 
+            flex-direction: column;
+            gap: 0.75rem; 
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 14px 20px; 
+            border: none; 
+            border-radius: 10px;
+            font-size: 1rem; 
+            font-weight: 600; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: var(--secondary); 
+            color: var(--text); 
+            border: 2px solid var(--border);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6; 
+            cursor: not-allowed;
+        }
+        
+        /* LISTA MOBILE */
+        .spreadsheet-item {
+            display: flex; 
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1rem; 
+            background: var(--secondary); 
+            border-radius: 8px;
+            margin-bottom: 0.75rem; 
+            border: 1px solid var(--border);
+            cursor: pointer; 
+            transition: all 0.3s ease;
+        }
+        
+        .spreadsheet-item.selected {
+            background: #e0e7ff; 
+            border-color: var(--primary);
+        }
+        
+        .spreadsheet-info {
+            flex: 1;
+        }
+        
+        .spreadsheet-name {
+            font-weight: 600; 
+            color: var(--text);
+            font-size: 0.95rem;
+            word-break: break-word;
+        }
+        
+        .spreadsheet-details {
+            font-size: 0.8rem; 
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+        
+        /* BOTÕES AUXILIARES */
+        .refresh-button {
+            background: var(--accent); 
+            color: white; 
+            border: none;
+            padding: 10px 16px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+        
+        .selection-button {
+            background: var(--primary); 
+            color: white; 
+            border: none;
+            padding: 10px 16px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+        
+        /* MENSAGENS */
+        .success-message {
+            background: #d1fae5; 
+            color: #065f46; 
+            padding: 12px;
+            border-radius: 8px; 
+            margin-top: 1rem; 
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .error-message {
+            background: #fee2e2; 
+            color: #991b1b; 
+            padding: 12px;
+            border-radius: 8px; 
+            margin-top: 1rem; 
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .empty-state {
+            text-align: center; 
+            padding: 2rem 1rem; 
+            color: var(--text-light);
+        }
+        
+        .empty-state .icon { 
+            font-size: 2.5rem; 
+            margin-bottom: 1rem; 
+            display: block; 
+        }
+        
+        .template-info {
+            background: #f8f9fa; 
+            padding: 12px; 
+            border-radius: 8px;
+            margin-top: 10px; 
+            font-size: 0.85rem; 
+            color: var(--text-light);
+        }
+        
+        .copies-info {
+            background: #f0f9ff; 
+            padding: 12px; 
+            border-radius: 8px;
+            margin-top: 10px; 
+            font-size: 0.85rem; 
+            color: #0369a1;
+        }
+        
+        .records-selection {
+            background: #fff7ed; 
+            padding: 1rem; 
+            border-radius: 8px;
+            margin-top: 10px; 
+            border: 1px solid #fed7aa;
+        }
+        
+        /* INPUT GROUP MOBILE */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .input-group span {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        /* MODAL MOBILE */
+        .modal-overlay {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5); 
+            display: flex;
+            align-items: center; 
+            justify-content: center; 
+            z-index: 1000;
+            padding: 1rem;
+        }
+        
+        .modal {
+            background: white; 
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow); 
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal h3 {
+            margin-bottom: 1rem; 
+            color: var(--text);
+            font-size: 1.3rem;
+        }
+        
+        .modal-buttons {
+            display: flex; 
+            flex-direction: column;
+            gap: 0.75rem; 
+            margin-top: 1.5rem;
+        }
+        
+        .selection-actions {
+            display: flex; 
+            flex-direction: column;
+            gap: 0.5rem; 
+            margin: 10px 0;
+        }
+        
+        .selection-summary {
+            background: #f0f9ff; 
+            padding: 12px; 
+            border-radius: 8px;
+            margin: 10px 0; 
+            font-size: 0.85rem;
+        }
+        
+        /* TABELA MOBILE */
+        .records-table {
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .records-table th,
+        .records-table td {
+            padding: 10px 8px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .records-table th {
+            background: var(--secondary); 
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        
+        .record-checkbox {
+            width: 40px; 
+            text-align: center;
+        }
+        
+        .record-preview {
+            max-width: 150px; 
+            overflow: hidden; 
+            text-overflow: ellipsis;
+            white-space: nowrap; 
+            font-size: 0.8rem;
+        }
+        
+        /* PÁGINAS */
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* UPLOAD PAGE */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            background: var(--secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .upload-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
         }
         
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
+        .file-input {
+            width: 100%;
+            padding: 1rem;
+            margin: 1rem 0;
         }
         
-        .stat-label {
-            color: var(--text-light);
+        /* TABLET */
+        @media (min-width: 768px) {
+            .header {
+                padding: 1.5rem 2rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .main-content {
+                padding: 2rem;
+            }
+            
+            .config-card, .preview-card {
+                padding: 2rem;
+            }
+            
+            .columns-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: row;
+            }
+            
+            .btn {
+                width: auto;
+                flex: 1;
+            }
+            
+            .spreadsheet-item {
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            .refresh-button, .selection-button {
+                width: auto;
+                margin-top: 0;
+            }
+            
+            .input-group {
+                flex-direction: row;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .form-input-small {
+                width: 120px;
+            }
+            
+            .input-group span {
+                text-align: left;
+            }
+            
+            .modal {
+                width: 600px;
+                padding: 2rem;
+            }
+            
+            .modal-buttons {
+                flex-direction: row;
+            }
+            
+            .selection-actions {
+                flex-direction: row;
+            }
         }
         
-        /* BOTÕES */
-        .quick-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
+        /* DESKTOP */
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            }
+            
+            .columns-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
         }
         
-        .action-button {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 1rem 2rem;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        
-        .action-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        /* CELULARES PEQUENOS */
+        @media (max-width: 360px) {
+            .header {
+                padding: 0.75rem;
+            }
+            
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .tab {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+            }
+            
+            .config-card, .preview-card {
+                padding: 1rem;
+            }
+            
+            .label-preview {
+                min-width: 140px;
+                padding: 0.75rem;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- SEU HTML AQUI (o mesmo que você já tem) -->
     <div class="container">
         <header class="header">
             <h1>🏷️ Sistema de Etiquetas</h1>
-
-          <nav class="tabs">
-    <a href="/" class="tab active">Início</a>
-    <a href="/upload" class="tab">Uploads</a>
-    <a href="/generate" class="tab">Gerar Etiquetas</a>
-</nav>
-
+            <nav class="tabs">
+                <button class="tab active" onclick="showPage('inicio')">Início</button>
+                <button class="tab" onclick="showPage('upload')">Uploads</button>
+                <button class="tab" onclick="showPage('generate')">Gerar Etiquetas</button>
+            </nav>
         </header>
 
         <main class="main-content">
-            <section class="welcome-card">
-                <h2>Bem-vindo ao Sistema de Etiquetas! 🎉</h2>
-                <p>Faça upload de suas planilhas Excel e gere etiquetas personalizadas de forma rápida e fácil.</p>
-            </section>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-number">12</div>
-                    <div class="stat-label">Planilhas Processadas</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🏷️</div>
-                    <div class="stat-number">1.247</div>
-                    <div class="stat-label">Etiquetas Geradas</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🎨</div>
-                    <div class="stat-number">3</div>
-                    <div class="stat-label">Templates</div>
+            <!-- PÁGINA INÍCIO -->
+            <div id="inicio" class="page active">
+                <div class="config-card">
+                    <h2>🎉 Bem-vindo ao Sistema de Etiquetas!</h2>
+                    <p>Este sistema permite fazer upload de planilhas Excel e gerar etiquetas em PDF de forma rápida e fácil.</p>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h3>📋 Como usar:</h3>
+                        <ol style="margin-left: 1.5rem; margin-top: 1rem; line-height: 2;">
+                            <li><strong>Uploads:</strong> Faça upload da sua planilha Excel (.xlsx, .xls)</li>
+                            <li><strong>Gerar Etiquetas:</strong> Selecione a planilha, configure as colunas e gere o PDF</li>
+                            <li><strong>Imprimir:</strong> Baixe e imprima suas etiquetas! 🖨️</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="showPage('upload')">
+                            📤 Ir para Uploads
+                        </button>
+                        <button class="btn btn-secondary" onclick="showPage('generate')">
+                            🏷️ Ir para Gerar Etiquetas
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <section class="guide-card">
-                <h3>📋 Como Usar o Sistema:</h3>
-                <ol class="guide-steps">
-                    <li><strong>Upload de Planilhas:</strong> Vá na aba "Uploads"</li>
-                    <li><strong>Configurar Etiquetas:</strong> Selecione a planilha</li>
-                    <li><strong>Gerar e Baixar:</strong> Pronto! PDF para download</li>
-                </ol>
-            </section>
+            <!-- PÁGINA UPLOAD -->
+            <div id="upload" class="page">
+                <div class="config-card">
+                    <h2>📤 Upload de Planilha</h2>
+                    
+                    <div class="upload-area">
+                        <div class="upload-icon">📊</div>
+                        <h3>Arraste e solte sua planilha aqui</h3>
+                        <p>ou</p>
+                        <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
+                        <button class="btn btn-primary" onclick="uploadFile()">
+                            📤 Fazer Upload da Planilha
+                        </button>
+                    </div>
+                    
+                    <div id="uploadStatus"></div>
 
-            <div class="quick-actions">
-                <a href="upload.html" class="action-button">📤 Fazer Upload</a>
-                <a href="generate.html" class="action-button">🏷️ Gerar Etiquetas</a>
+                    <div class="form-group">
+                        <label>Planilhas Carregadas:</label>
+                        <button class="refresh-button" onclick="loadSpreadsheets()">
+                            🔄 Atualizar Lista
+                        </button>
+                        <div id="spreadsheetsList">
+                            <div class="empty-state">
+                                <span class="icon">📊</span>
+                                <p>Nenhuma planilha carregada</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PÁGINA GERAR ETIQUETAS -->
+            <div id="generate" class="page">
+                <div class="config-card">
+                    <h2>⚙️ Configurar Etiquetas</h2>
+                    
+                    <div class="form-group">
+                        <label>Selecionar Planilha:</label>
+                        <button class="refresh-button" onclick="loadSpreadsheetsForGenerate()">
+                            🔄 Atualizar Lista
+                        </button>
+                        <div id="spreadsheetsListGenerate">
+                            <div class="empty-state">
+                                <span class="icon">📊</span>
+                                <p>Carregando planilhas...</p>
+                            </div>
+                        </div>
+                        <div id="loadStatus"></div>
+                    </div>
+
+                    <div class="form-group" id="recordsSelectionSection" style="display: none;">
+                        <label>Selecionar Registros:</label>
+                        <button class="selection-button" onclick="openRecordsModal()">
+                            📝 Escolher Registros
+                        </button>
+                        <div class="records-selection">
+                            <div id="recordsSelectionInfo">
+                                <strong>📋 Status:</strong> Todos os registros serão usados
+                            </div>
+                            <div class="selection-summary" id="recordsSelectionSummary" style="display: none;">
+                                <strong>✅ Selecionados:</strong> <span id="selectedCount">0</span> registros
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Colunas para Mostrar:</label>
+                        <div id="columnsContainer" class="columns-grid">
+                            <div class="empty-state">
+                                <span class="icon">📊</span>
+                                <p>Selecione uma planilha primeiro</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="labelTemplate">Estilo das Etiquetas:</label>
+                        <select id="labelTemplate" class="form-select">
+                            <option value="simple">📄 Simples (Padrão)</option>
+                        </select>
+                        <div class="template-info">
+                            <strong>💡 Características:</strong>
+                            <div id="templateDescription">Estilo simples com texto alinhado à esquerda e fontes grandes.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="copiesPerLabel">Cópias por Registro:</label>
+                        <div class="input-group">
+                            <input type="number" id="copiesPerLabel" class="form-input form-input-small" 
+                                   min="1" max="1000" value="1" onchange="updateCopiesInfo()">
+                            <span>cópias por registro</span>
+                        </div>
+                        <div class="copies-info">
+                            <strong>📊 Resumo:</strong>
+                            <div id="copiesSummary">1 registro × 1 cópia = 1 etiqueta total</div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="generateLabels()" id="generateBtn">
+                            🏷️ Gerar Etiquetas PDF
+                        </button>
+                        <button class="btn btn-secondary" onclick="previewLabels()">
+                            👁️ Visualizar Preview
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-card">
+                    <h2>👀 Preview das Etiquetas</h2>
+                    <div id="previewArea" class="preview-area">
+                        <div class="preview-placeholder">
+                            <div class="icon">👁️</div>
+                            <p>Selecione uma planilha</p>
+                            <p>e clique em "Visualizar Preview"</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+
+    <!-- Modal de Seleção de Registros -->
+    <div id="recordsModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <h3>📝 Selecionar Registros</h3>
+            <p>Selecione os registros específicos para gerar etiquetas:</p>
+            
+            <div class="selection-actions">
+                <button class="btn btn-secondary" onclick="selectAllRecords()">✅ Selecionar Todos</button>
+                <button class="btn btn-secondary" onclick="deselectAllRecords()">❌ Limpar Seleção</button>
+                <button class="btn btn-secondary" onclick="selectFirstRecord()">🔢 Selecionar Primeiro</button>
+            </div>
+
+            <div class="selection-summary">
+                <strong>📋 Status:</strong> <span id="modalSelectionCount">0</span> de <span id="modalTotalCount">0</span> registros selecionados
+            </div>
+
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table class="records-table">
+                    <thead>
+                        <tr>
+                            <th class="record-checkbox">
+                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleAllRecords(this.checked)">
+                            </th>
+                            <th>#</th>
+                            <th>Prévia dos Dados</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTableBody">
+                        <!-- Os registros serão preenchidos via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeRecordsModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmRecordsSelection()">
+                    ✅ Confirmar Seleção
+                </button>
+            </div>
+        </div>
+    </div>
+
+ <script>
+    // ✅ CONFIGURAÇÃO DA API
+    function getApiUrl() {
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            return window.location.origin + '/api';
+        }
+        return 'http://localhost:3000/api';
+    }
+
+    const API_URL = getApiUrl();
+    
+    // ✅ FUNÇÃO PARA MUDAR PÁGINAS
+    function showPage(pageId) {
+        // Esconder todas as páginas
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
+        
+        // Remover active de todas as tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Mostrar página selecionada
+        document.getElementById(pageId).classList.add('active');
+        
+        // Ativar tab selecionada
+        event.target.classList.add('active');
+        
+        // Atualizar conteúdo específico da página
+        if (pageId === 'upload') {
+            loadSpreadsheets();
+        } else if (pageId === 'generate') {
+            loadSpreadsheetsForGenerate();
+        }
+    }
+
+    // ✅ FUNÇÃO DE UPLOAD
+    async function uploadFile() {
+        const fileInput = document.getElementById('fileInput');
+        const statusDiv = document.getElementById('uploadStatus');
+        
+        if (!fileInput.files[0]) {
+            statusDiv.innerHTML = '<div class="error-message">❌ Selecione um arquivo primeiro</div>';
+            return;
+        }
+
+        const file = fileInput.files[0];
+        
+        try {
+            statusDiv.innerHTML = '<div style="color: #0369a1; padding: 12px; background: #f0f9ff; border-radius: 8px;">⏳ Enviando arquivo...</div>';
+            
+            const formData = new FormData();
+            formData.append('spreadsheet', file);
+
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                statusDiv.innerHTML = `<div class="success-message">✅ ${result.message}</div>`;
+                fileInput.value = '';
+                loadSpreadsheets(); // Atualizar lista
+            } else {
+                statusDiv.innerHTML = `<div class="error-message">❌ ${result.message}</div>`;
+            }
+        } catch (error) {
+            console.error('Erro no upload:', error);
+            statusDiv.innerHTML = '<div class="error-message">❌ Erro ao fazer upload</div>';
+        }
+    }
+
+    // ✅ FUNÇÃO PARA CARREGAR PLANILHAS (UPLOAD PAGE)
+    async function loadSpreadsheets() {
+        const container = document.getElementById('spreadsheetsList');
+        
+        try {
+            const response = await fetch('/api/spreadsheets');
+            const result = await response.json();
+
+            if (result.success && result.spreadsheets.length > 0) {
+                container.innerHTML = result.spreadsheets.map(sheet => `
+                    <div class="spreadsheet-item">
+                        <div class="spreadsheet-info">
+                            <div class="spreadsheet-name">${sheet.fileName}</div>
+                            <div class="spreadsheet-details">
+                                📅 ${new Date(sheet.uploadDate).toLocaleDateString()} | 
+                                📊 ${sheet.records} linhas |
+                                📋 ${sheet.columns.length} colunas
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">📊</span>
+                        <p>Nenhuma planilha encontrada</p>
+                        <p>Faça upload de uma planilha primeiro</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar planilhas:', error);
+            container.innerHTML = '<div class="error-message">❌ Erro ao carregar planilhas</div>';
+        }
+    }
+
+    // ✅ FUNÇÃO PARA CARREGAR PLANILHAS (GENERATE PAGE)
+    async function loadSpreadsheetsForGenerate() {
+        const container = document.getElementById('spreadsheetsListGenerate');
+        
+        try {
+            const response = await fetch('/api/spreadsheets');
+            const result = await response.json();
+
+            if (result.success && result.spreadsheets.length > 0) {
+                container.innerHTML = result.spreadsheets.map(sheet => `
+                    <div class="spreadsheet-item ${currentSpreadsheet?.id === sheet.id ? 'selected' : ''}" 
+                         onclick="selectSpreadsheet('${sheet.id}', this)">
+                        <div class="spreadsheet-info">
+                            <div class="spreadsheet-name">${sheet.fileName}</div>
+                            <div class="spreadsheet-details">
+                                📅 ${new Date(sheet.uploadDate).toLocaleDateString()} | 
+                                📊 ${sheet.records} linhas |
+                                📋 ${sheet.columns.length} colunas
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">📊</span>
+                        <p>Nenhuma planilha encontrada</p>
+                        <p>Faça upload primeiro na aba "Uploads"</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar planilhas:', error);
+            container.innerHTML = '<div class="error-message">❌ Erro ao carregar planilhas</div>';
+        }
+    }
+
+    // ✅ VARIÁVEIS GLOBAIS
+    let currentSpreadsheet = null;
+    let selectedRecords = [];
+
+    // ✅ FUNÇÃO CORRIGIDA PARA SELECIONAR PLANILHA
+    async function selectSpreadsheet(spreadsheetId, clickedElement) {
+        try {
+            console.log('📥 Selecionando planilha:', spreadsheetId);
+            
+            currentSpreadsheet = null;
+            selectedRecords = [];
+            
+            const response = await fetch(`/api/spreadsheets/${spreadsheetId}/data`);
+            
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('📊 Dados recebidos:', data);
+
+            if (data.success) {
+                currentSpreadsheet = {
+                    id: spreadsheetId,
+                    data: data.data,
+                    columns: data.columns,
+                    totalRecords: data.totalRecords
+                };
+
+                // Atualizar UI - usar o elemento clicado
+                document.querySelectorAll('.spreadsheet-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                if (clickedElement) {
+                    clickedElement.classList.add('selected');
+                }
+
+                displayColumns(data.columns);
+                updateRecordsSelectionUI();
+                
+                showMessage('success', `✅ Planilha selecionada: ${data.totalRecords} linhas e ${data.columns.length} colunas carregadas`);
+                
+            } else {
+                throw new Error(data.message || 'Erro ao carregar dados');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao selecionar planilha:', error);
+            showMessage('error', `❌ Erro ao carregar dados da planilha: ${error.message}`);
+        }
+    }
+
+    // ✅ FUNÇÃO CORRIGIDA PARA EXIBIR COLUNAS
+    function displayColumns(columns) {
+        const container = document.getElementById('columnsContainer');
+        
+        console.log('📋 Colunas recebidas:', columns);
+        
+        if (!columns || columns.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <span class="icon">📊</span>
+                    <p>Nenhuma coluna encontrada na planilha</p>
+                    <p>Verifique se a planilha tem cabeçalhos na primeira linha</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Ordenar colunas por nome para melhor visualização
+        const sortedColumns = columns.sort((a, b) => a.name.localeCompare(b.name));
+        
+        container.innerHTML = sortedColumns.map(col => `
+            <div class="column-item">
+                <label>
+                    <input type="checkbox" value="${col.key}" checked 
+                           onchange="updatePreview()">
+                    <span style="font-weight: 500;">${col.name}</span>
+                    <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 4px;">
+                        Chave: ${col.key}
+                    </div>
+                </label>
+            </div>
+        `).join('');
+
+        // Mostrar seção de seleção de registros
+        document.getElementById('recordsSelectionSection').style.display = 'block';
+        
+        // Atualizar preview automaticamente
+        updatePreview();
+    }
+
+    // ✅ FUNÇÃO PARA MOSTRAR MENSAGENS
+    function showMessage(type, message) {
+        const statusDiv = document.getElementById('loadStatus');
+        if (type === 'success') {
+            statusDiv.innerHTML = `<div class="success-message">${message}</div>`;
+        } else {
+            statusDiv.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+        
+        setTimeout(() => {
+            statusDiv.innerHTML = '';
+        }, 5000);
+    }
+
+    // ✅ FUNÇÃO PARA ATUALIZAR SELEÇÃO DE LINHAS
+    function updateRecordsSelectionUI() {
+        if (!currentSpreadsheet) return;
+        
+        const infoElement = document.getElementById('recordsSelectionInfo');
+        const summaryElement = document.getElementById('recordsSelectionSummary');
+        
+        if (selectedRecords.length === 0) {
+            infoElement.innerHTML = `<strong>📋 Status:</strong> Todas as ${currentSpreadsheet.totalRecords} linhas serão usadas`;
+            summaryElement.style.display = 'none';
+        } else {
+            infoElement.innerHTML = `<strong>📋 Status:</strong> ${selectedRecords.length} linhas selecionadas`;
+            document.getElementById('selectedCount').textContent = selectedRecords.length;
+            summaryElement.style.display = 'block';
+        }
+        
+        updateCopiesInfo();
+    }
+
+    // ✅ FUNÇÃO PARA ATUALIZAR INFO DE CÓPIAS
+    function updateCopiesInfo() {
+        if (!currentSpreadsheet) return;
+        
+        const copies = parseInt(document.getElementById('copiesPerLabel').value) || 1;
+        const totalRecords = selectedRecords.length > 0 ? selectedRecords.length : currentSpreadsheet.totalRecords;
+        const totalLabels = totalRecords * copies;
+        
+        document.getElementById('copiesSummary').textContent = 
+            `${totalRecords} linhas × ${copies} cópias = ${totalLabels} etiquetas totais`;
+    }
+
+    // ✅ FUNÇÕES DO MODAL DE SELEÇÃO DE LINHAS
+    function openRecordsModal() {
+        if (!currentSpreadsheet) {
+            showMessage('error', 'Selecione uma planilha primeiro');
+            return;
+        }
+
+        const modal = document.getElementById('recordsModal');
+        modal.style.display = 'flex';
+        
+        loadRecordsIntoModal();
+    }
+
+    function closeRecordsModal() {
+        document.getElementById('recordsModal').style.display = 'none';
+    }
+
+    function loadRecordsIntoModal() {
+        if (!currentSpreadsheet) return;
+        
+        const tbody = document.getElementById('recordsTableBody');
+        const totalCount = document.getElementById('modalTotalCount');
+        const selectionCount = document.getElementById('modalSelectionCount');
+        
+        totalCount.textContent = currentSpreadsheet.totalRecords;
+        selectionCount.textContent = selectedRecords.length;
+        
+        tbody.innerHTML = currentSpreadsheet.data.map((record, index) => `
+            <tr>
+                <td class="record-checkbox">
+                    <input type="checkbox" value="${index}" 
+                           ${selectedRecords.includes(index) ? 'checked' : ''}
+                           onchange="updateRecordSelection(${index}, this.checked)">
+                </td>
+                <td>${index + 1}</td>
+                <td class="record-preview" title="${record.preview}">${record.preview}</td>
+            </tr>
+        `).join('');
+        
+        updateSelectAllCheckbox();
+    }
+
+    function updateRecordSelection(index, isSelected) {
+        if (isSelected) {
+            if (!selectedRecords.includes(index)) {
+                selectedRecords.push(index);
+            }
+        } else {
+            selectedRecords = selectedRecords.filter(i => i !== index);
+        }
+        
+        document.getElementById('modalSelectionCount').textContent = selectedRecords.length;
+        updateSelectAllCheckbox();
+    }
+
+    function toggleAllRecords(selectAll) {
+        if (selectAll) {
+            selectedRecords = currentSpreadsheet.data.map((_, index) => index);
+        } else {
+            selectedRecords = [];
+        }
+        
+        // Atualizar checkboxes
+        document.querySelectorAll('#recordsTableBody input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = selectAll;
+        });
+        
+        document.getElementById('modalSelectionCount').textContent = selectedRecords.length;
+        updateSelectAllCheckbox();
+    }
+
+    function updateSelectAllCheckbox() {
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const totalRecords = currentSpreadsheet?.totalRecords || 0;
+        
+        if (selectedRecords.length === totalRecords) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else if (selectedRecords.length > 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        }
+    }
+
+    function selectAllRecords() {
+        toggleAllRecords(true);
+    }
+
+    function deselectAllRecords() {
+        toggleAllRecords(false);
+    }
+
+    function selectFirstRecord() {
+        selectedRecords = [0];
+        loadRecordsIntoModal();
+    }
+
+    function confirmRecordsSelection() {
+        updateRecordsSelectionUI();
+        closeRecordsModal();
+        updatePreview();
+    }
+
+    // ✅ FUNÇÃO MELHORADA PARA PREVIEW
+    function updatePreview() {
+        const previewArea = document.getElementById('previewArea');
+        
+        if (!currentSpreadsheet) {
+            previewArea.innerHTML = `
+                <div class="preview-placeholder">
+                    <div class="icon">👁️</div>
+                    <p>Selecione uma planilha primeiro</p>
+                </div>
+            `;
+            return;
+        }
+
+        const selectedColumns = Array.from(document.querySelectorAll('#columnsContainer input[type="checkbox"]:checked'))
+            .map(cb => cb.value);
+            
+        if (selectedColumns.length === 0) {
+            previewArea.innerHTML = `
+                <div class="preview-placeholder">
+                    <div class="icon">📊</div>
+                    <p>Selecione pelo menos uma coluna</p>
+                    <p>para ver o preview das etiquetas</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Criar preview com dados reais do primeiro registro
+        const firstRecord = currentSpreadsheet.data[0];
+        const selectedColumnNames = selectedColumns.map(colKey => {
+            const column = currentSpreadsheet.columns.find(c => c.key === colKey);
+            return column ? column.name : colKey;
+        });
+
+        previewArea.innerHTML = `
+            <div style="text-align: left;">
+                <h3 style="margin-bottom: 1rem; color: var(--primary);">📋 Preview da Primeira Etiqueta</h3>
+                <div class="label-preview">
+                    <strong style="color: var(--primary);">ETIQUETA 1/${currentSpreadsheet.totalRecords}</strong>
+                    <hr style="margin: 10px 0; border: none; border-top: 1px solid var(--border);">
+                    ${selectedColumns.map(colKey => {
+                        const column = currentSpreadsheet.columns.find(c => c.key === colKey);
+                        const value = firstRecord.data[colKey];
+                        const displayValue = value !== undefined && value !== null && value !== '' ? 
+                            String(value) : '[VAZIO]';
+                        return column ? 
+                            `<div style="margin: 8px 0;"><strong>${column.name}:</strong> ${displayValue}</div>` : 
+                            '';
+                    }).join('')}
+                </div>
+                <div style="color: var(--text-light); font-size: 0.9rem; margin-top: 15px;">
+                    <strong>📊 Estatísticas:</strong><br>
+                    • ${selectedColumns.length} colunas selecionadas<br>
+                    • ${currentSpreadsheet.totalRecords} linhas totais<br>
+                    • ${selectedRecords.length > 0 ? selectedRecords.length + ' linhas selecionadas' : 'Todas as linhas serão usadas'}
+                </div>
+            </div>
+        `;
+    }
+
+    function previewLabels() {
+        updatePreview(); // Reutiliza a mesma função de preview
+    }
+
+    // ✅ FUNÇÃO CORRIGIDA PARA GERAR ETIQUETAS
+    async function generateLabels() {
+        if (!currentSpreadsheet) {
+            showMessage('error', 'Selecione uma planilha primeiro');
+            return;
+        }
+
+        const selectedColumns = Array.from(document.querySelectorAll('#columnsContainer input[type="checkbox"]:checked'))
+            .map(cb => cb.value);
+            
+        if (selectedColumns.length === 0) {
+            showMessage('error', 'Selecione pelo menos uma coluna');
+            return;
+        }
+
+        const generateBtn = document.getElementById('generateBtn');
+        const template = document.getElementById('labelTemplate').value;
+        const copies = parseInt(document.getElementById('copiesPerLabel').value) || 1;
+        
+        try {
+            // Mostrar loading
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '⏳ Gerando PDF...';
+            
+            // Construir URL para download do PDF
+            const params = new URLSearchParams({
+                columns: selectedColumns.join(','),
+                template: template,
+                copies: copies
+            });
+            
+            if (selectedRecords.length > 0) {
+                params.append('rows', selectedRecords.join(','));
+            }
+
+            const pdfUrl = `/api/generate-pdf/${currentSpreadsheet.id}?${params}`;
+            console.log('📄 Gerando PDF:', pdfUrl);
+            
+            // Criar link para download
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.target = '_blank';
+            link.download = `etiquetas-${Date.now()}.pdf`;
+            
+            // Disparar o download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showMessage('success', '✅ PDF gerado com sucesso! Verifique sua barra de downloads.');
+            
+        } catch (error) {
+            console.error('❌ Erro ao gerar PDF:', error);
+            showMessage('error', `❌ Erro ao gerar PDF: ${error.message}`);
+        } finally {
+            // Restaurar botão
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '🏷️ Gerar Etiquetas PDF';
+        }
+    }
+
+    // ✅ FUNÇÃO PARA TESTAR CONEXÃO
+    async function testConnection() {
+        try {
+            const response = await fetch('/api/test');
+            const result = await response.json();
+            console.log('✅ Backend conectado:', result);
+        } catch (error) {
+            console.error('❌ Erro na conexão:', error);
+        }
+    }
+
+    // ✅ INICIALIZAÇÃO
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('🚀 Sistema carregado');
+        testConnection();
+        loadSpreadsheets();
+    });
+</script>
+
 </body>
+
 </html>

@@ -1,915 +1,376 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerar Etiquetas - Sistema de Etiquetas</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --primary: #6366f1; --primary-dark: #4f46e5; --secondary: #f8fafc;
-            --accent: #06d6a0; --text: #1e293b; --text-light: #64748b;
-            --border: #e2e8f0; --shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-            --shadow-lg: 0 20px 40px -10px rgba(0,0,0,0.15);
-            --danger: #ef4444; --danger-dark: #dc2626;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh; color: var(--text); line-height: 1.6;
-        }
-        .container {
-            max-width: 1200px; margin: 0 auto; background: white;
-            min-height: 100vh; box-shadow: var(--shadow-lg);
-        }
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white; padding: 2rem 3rem; position: relative; overflow: hidden;
-        }
-        .header::before {
-            content: ''; position: absolute; top: 0; right: 0;
-            width: 200px; height: 200px; background: rgba(255,255,255,0.1);
-            border-radius: 50%; transform: translate(30%, -30%);
-        }
-        .header h1 {
-            font-size: 2.5rem; font-weight: 700; margin-bottom: 1.5rem;
-            position: relative; z-index: 2;
-        }
-        .tabs {
-            display: inline-flex; background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px); border-radius: 12px; padding: 6px;
-            gap: 4px; position: relative; z-index: 2;
-        }
-        .tab {
-            padding: 12px 28px; color: white; text-decoration: none;
-            background: transparent; border: none; border-radius: 8px;
-            cursor: pointer; font-size: 1rem; font-weight: 500;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .tab:hover { background: rgba(255,255,255,0.2); transform: translateY(-1px); }
-        .tab.active {
-            background: white; color: var(--primary); box-shadow: var(--shadow);
-            transform: translateY(-1px);
-        }
-        .main-content { padding: 3rem; background: var(--secondary); min-height: calc(100vh - 200px); }
-        .config-card, .preview-card {
-            background: white; padding: 2.5rem; border-radius: 16px;
-            box-shadow: var(--shadow); margin-bottom: 2rem; border: 1px solid var(--border);
-        }
-        .config-card h2, .preview-card h2 {
-            color: var(--text); margin-bottom: 1.5rem; font-size: 1.5rem;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .config-card h2::before { content: '⚙️'; }
-        .preview-card h2::before { content: '👁️'; }
-        .form-group { margin-bottom: 1.5rem; }
-        .form-group label {
-            display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);
-        }
-        .form-select, .form-input {
-            width: 100%; padding: 12px 16px; border: 2px solid var(--border);
-            border-radius: 8px; font-size: 1rem; transition: all 0.3s ease;
-        }
-        .form-select:focus, .form-input:focus {
-            outline: none; border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-        .form-input-small {
-            width: 120px; padding: 8px 12px; font-size: 0.9rem;
-        }
-        .columns-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem; margin-top: 1rem;
-        }
-        .column-item {
-            background: var(--secondary); padding: 1rem; border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-        .column-item label {
-            display: flex; align-items: center; gap: 8px;
-            font-weight: normal; margin-bottom: 0; cursor: pointer;
-        }
-        .preview-area {
-            background: white; border: 2px dashed var(--border); border-radius: 12px;
-            padding: 2rem; min-height: 200px; text-align: center;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .preview-placeholder { color: var(--text-light); }
-        .label-preview {
-            background: white; border: 2px solid var(--primary); border-radius: 8px;
-            padding: 1rem; margin: 0.5rem; display: inline-block;
-            box-shadow: var(--shadow); min-width: 200px;
-        }
-        .swosaka-preview {
-            background: white; border: 2px solid #000000; border-radius: 4px;
-            padding: 1rem; margin: 0.5rem; display: inline-block;
-            box-shadow: var(--shadow); min-width: 220px; height: 180px;
-            position: relative; font-family: 'Courier New', monospace;
-        }
-        .action-buttons { display: flex; gap: 1rem; margin-top: 2rem; }
-        .btn {
-            padding: 12px 24px; border: none; border-radius: 8px;
-            font-size: 1rem; font-weight: 600; cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .btn-secondary {
-            background: var(--secondary); color: var(--text); border: 2px solid var(--border);
-        }
-        .btn-secondary:hover { background: var(--border); }
-        .btn-danger {
-            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
-            color: white;
-        }
-        .btn-danger:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .empty-state { text-align: center; padding: 3rem; color: var(--text-light); }
-        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
-        .refresh-button {
-            background: var(--accent); color: white; border: none;
-            padding: 8px 16px; border-radius: 6px; cursor: pointer;
-            margin-left: 10px; font-size: 0.9rem;
-        }
-        .refresh-button:hover { background: #05b38c; }
-        .delete-button {
-            background: var(--danger); color: white; border: none;
-            padding: 6px 12px; border-radius: 6px; cursor: pointer;
-            margin-left: 10px; font-size: 0.8rem;
-        }
-        .delete-button:hover { background: var(--danger-dark); }
-        .success-message {
-            background: #d1fae5; color: #065f46; padding: 10px;
-            border-radius: 6px; margin-top: 10px; text-align: center;
-        }
-        .error-message {
-            background: #fee2e2; color: #991b1b; padding: 10px;
-            border-radius: 6px; margin-top: 10px; text-align: center;
-        }
-        .btn:disabled {
-            opacity: 0.6; cursor: not-allowed; transform: none !important;
-        }
-        .template-info {
-            background: #f8f9fa; padding: 10px; border-radius: 6px;
-            margin-top: 10px; font-size: 0.9rem; color: var(--text-light);
-        }
-        .copies-info {
-            background: #f0f9ff; padding: 10px; border-radius: 6px;
-            margin-top: 10px; font-size: 0.9rem; color: #0369a1;
-        }
-        .records-selection {
-            background: #fff7ed; padding: 15px; border-radius: 8px;
-            margin-top: 10px; border: 1px solid #fed7aa;
-        }
-        .spreadsheet-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px; background: var(--secondary); border-radius: 8px;
-            margin-bottom: 8px; border: 1px solid var(--border);
-            cursor: pointer; transition: all 0.3s ease;
-        }
-        .spreadsheet-item:hover {
-            background: #f1f5f9; border-color: var(--primary);
-        }
-        .spreadsheet-item.selected {
-            background: #e0e7ff; border-color: var(--primary);
-        }
-        .spreadsheet-info {
-            flex: 1;
-        }
-        .spreadsheet-name {
-            font-weight: 600; color: var(--text);
-        }
-        .spreadsheet-details {
-            font-size: 0.8rem; color: var(--text-light);
-            margin-top: 4px;
-        }
-        .spreadsheet-actions {
-            display: flex; gap: 8px;
-        }
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.5); display: flex;
-            align-items: center; justify-content: center; z-index: 1000;
-        }
-        .modal {
-            background: white; padding: 2rem; border-radius: 12px;
-            box-shadow: var(--shadow-lg); max-width: 90%; width: 800px; max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal h3 {
-            margin-bottom: 1rem; color: var(--text);
-        }
-        .modal p {
-            margin-bottom: 1.5rem; color: var(--text-light);
-        }
-        .modal-buttons {
-            display: flex; gap: 1rem; justify-content: flex-end;
-            margin-top: 1.5rem;
-        }
-        .input-group {
-            display: flex; align-items: center; gap: 10px;
-        }
-        .input-help {
-            font-size: 0.8rem; color: var(--text-light);
-            margin-top: 4px;
-        }
-        .records-table {
-            width: 100%; border-collapse: collapse; margin-top: 1rem;
-        }
-        .records-table th,
-        .records-table td {
-            padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border);
-        }
-        .records-table th {
-            background: var(--secondary); font-weight: 600;
-        }
-        .records-table tr:hover {
-            background: #f8fafc;
-        }
-        .record-checkbox {
-            width: 40px; text-align: center;
-        }
-        .record-preview {
-            max-width: 300px; overflow: hidden; text-overflow: ellipsis;
-            white-space: nowrap; font-size: 0.9rem;
-        }
-        .selection-actions {
-            display: flex; gap: 10px; margin: 10px 0;
-        }
-        .selection-summary {
-            background: #f0f9ff; padding: 10px; border-radius: 6px;
-            margin: 10px 0; font-size: 0.9rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1>🏷️ Sistema de Etiquetas</h1>
-            <nav class="tabs">
-                <a href="/" class="tab">Início</a>
-                <a href="/upload" class="tab">Uploads</a>
-                <a href="/generate" class="tab active">Gerar Etiquetas</a>
-            </nav>
-        </header>
-
-        <main class="main-content">
-            <div class="config-card">
-                <h2>Configurar Etiquetas</h2>
-                
-                <div class="form-group">
-                    <label for="spreadsheetSelect">
-                        Selecionar Planilha:
-                        <button class="refresh-button" onclick="loadSpreadsheets()" title="Recarregar lista">
-                            🔄 Atualizar
-                        </button>
-                    </label>
-                    <div id="spreadsheetsList">
-                        <div class="empty-state">
-                            <span class="icon">📊</span>
-                            <p>Carregando planilhas disponíveis...</p>
-                        </div>
-                    </div>
-                    <div id="loadStatus"></div>
-                </div>
-
-                <!-- ✅ SEÇÃO: Seleção de Registros -->
-                <div class="form-group" id="recordsSelectionSection" style="display: none;">
-                    <label>
-                        Selecionar Registros:
-                        <button class="refresh-button" onclick="openRecordsModal()" title="Selecionar registros específicos">
-                            📝 Selecionar Registros
-                        </button>
-                    </label>
-                    <div class="records-selection">
-                        <div id="recordsSelectionInfo">
-                            <strong>📋 Status:</strong> Todos os registros serão usados
-                        </div>
-                        <div class="selection-summary" id="recordsSelectionSummary" style="display: none;">
-                            <strong>✅ Selecionados:</strong> <span id="selectedCount">0</span> registros
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Colunas para Mostrar nas Etiquetas:</label>
-                    <div id="columnsContainer" class="columns-grid">
-                        <div class="empty-state">
-                            <span class="icon">📊</span>
-                            <p>Selecione uma planilha para ver as colunas disponíveis</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="labelTemplate">Estilo das Etiquetas:</label>
-                    <select id="labelTemplate" class="form-select">
-                        <option value="simple">📄 Simples (Padrão)</option>
-                        <!-- ✅ REMOVIDOS OS OUTROS MODELOS -->
-                    </select>
-                    <div class="template-info">
-                        <strong>💡 Características:</strong>
-                        <div id="templateDescription">Estilo simples com cabeçalho cinza e bordas sutis. Cada etiqueta terá um número de identificação único no rodapé.</div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="copiesPerLabel">
-                        Cópias por Registro:
-                        <span style="font-weight: normal; color: var(--text-light);">(quantas etiquetas iguais gerar para cada linha)</span>
-                    </label>
-                    <div class="input-group">
-                        <input type="number" id="copiesPerLabel" class="form-input form-input-small" 
-                               min="1" max="1000" value="1" onchange="updateCopiesInfo()">
-                        <span style="color: var(--text-light);">cópias por registro</span>
-                    </div>
-                    <div class="copies-info">
-                        <strong>📊 Resumo:</strong>
-                        <div id="copiesSummary">1 registro × 1 cópia = 1 etiqueta total</div>
-                    </div>
-                </div>
-
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="generateLabels()" id="generateBtn">
-                        🏷️ Gerar Etiquetas PDF
-                    </button>
-                    <button class="btn btn-secondary" onclick="previewLabels()">
-                        👁️ Visualizar Preview
-                    </button>
-                </div>
-            </div>
-
-            <div class="preview-card">
-                <h2>Preview das Etiquetas</h2>
-                <div id="previewArea" class="preview-area">
-                    <div class="preview-placeholder">
-                        <div class="icon">👁️</div>
-                        <p>Selecione uma planilha e clique em "Visualizar Preview"</p>
-                        <p>para ver como ficarão suas etiquetas</p>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modal de Confirmação de Exclusão -->
-    <div id="deleteModal" class="modal-overlay" style="display: none;">
-        <div class="modal">
-            <h3>🗑️ Confirmar Exclusão</h3>
-            <p id="deleteModalText">Tem certeza que deseja excluir esta planilha?</p>
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
-                <button class="btn btn-danger" onclick="confirmDelete()" id="confirmDeleteBtn">
-                    Sim, Excluir
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ✅ MODAL: Seleção de Registros -->
-    <div id="recordsModal" class="modal-overlay" style="display: none;">
-        <div class="modal">
-            <h3>📝 Selecionar Registros</h3>
-            <p>Selecione os registros específicos que deseja usar para gerar etiquetas:</p>
-            
-            <div class="selection-actions">
-                <button class="btn btn-secondary" onclick="selectAllRecords()">✅ Selecionar Todos</button>
-                <button class="btn btn-secondary" onclick="deselectAllRecords()">❌ Limpar Seleção</button>
-                <button class="btn btn-secondary" onclick="selectFirstRecord()">🔢 Selecionar Primeiro</button>
-            </div>
-
-            <div class="selection-summary">
-                <strong>📋 Status:</strong> <span id="modalSelectionCount">0</span> de <span id="modalTotalCount">0</span> registros selecionados
-            </div>
-
-            <div style="max-height: 400px; overflow-y: auto;">
-                <table class="records-table">
-                    <thead>
-                        <tr>
-                            <th class="record-checkbox">
-                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleAllRecords(this.checked)">
-                            </th>
-                            <th>#</th>
-                            <th>Prévia dos Dados</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recordsTableBody">
-                        <!-- Os registros serão preenchidos via JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeRecordsModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="confirmRecordsSelection()">
-                    ✅ Confirmar Seleção
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const API_URL = 'http://localhost:3000/api';
-        let currentSpreadsheet = null;
-        let spreadsheets = [];
-        let spreadsheetToDelete = null;
-        let selectedRecords = null; // ✅ Array para armazenar registros selecionados
-        let spreadsheetData = null; // ✅ Dados completos da planilha
-
-        // ✅ ATUALIZADO: Apenas descrição do template simples
-        const templateDescriptions = {
-            simple: "Estilo simples com cabeçalho cinza e bordas sutis. Perfeito para uso geral. Texto alinhado à esquerda com fontes grandes e legíveis."
-        };
-
-        // ✅ FUNÇÃO: Atualizar informações de cópias
-        function updateCopiesInfo() {
-            const copiesInput = document.getElementById('copiesPerLabel');
-            let copies = parseInt(copiesInput.value);
-            
-            if (isNaN(copies) || copies < 1) {
-                copies = 1;
-                copiesInput.value = 1;
-            } else if (copies > 1000) {
-                copies = 1000;
-                copiesInput.value = 1000;
-            }
-            
-            const totalRecords = selectedRecords ? selectedRecords.length : (currentSpreadsheet ? currentSpreadsheet.records : 0);
-            const totalEtiquetas = totalRecords * copies;
-            
-            document.getElementById('copiesSummary').innerHTML = 
-                `${totalRecords} registros × ${copies} cópias = <strong>${totalEtiquetas} etiquetas no total</strong>`;
-        }
-
-        // ✅ FUNÇÃO: Carregar planilhas disponíveis
-        async function loadSpreadsheets() {
-            try {
-                console.log('🔄 Carregando planilhas do backend...');
-                document.getElementById('loadStatus').innerHTML = '<div style="color: var(--accent);">⏳ Carregando...</div>';
-                
-                const response = await fetch(`${API_URL}/spreadsheets`);
-                
-                if (!response.ok) throw new Error(`Erro HTTP! status: ${response.status}`);
-                
-                const result = await response.json();
-                spreadsheets = result.spreadsheets || [];
-                
-                updateSpreadsheetsList();
-                
-                if (spreadsheets.length > 0) {
-                    document.getElementById('loadStatus').innerHTML = `<div class="success-message">✅ ${spreadsheets.length} planilhas carregadas!</div>`;
-                } else {
-                    document.getElementById('loadStatus').innerHTML = '<div style="color: var(--text-light);">ℹ️ Nenhuma planilha disponível</div>';
-                }
-            } catch (error) {
-                console.error('❌ Erro ao carregar planilhas:', error);
-                document.getElementById('loadStatus').innerHTML = `<div class="error-message">❌ Erro: ${error.message}</div>`;
-            }
-        }
-
-        // ✅ FUNÇÃO: Atualizar lista de planilhas na interface
-        function updateSpreadsheetsList() {
-            const container = document.getElementById('spreadsheetsList');
-            
-            if (!spreadsheets || spreadsheets.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <span class="icon">📭</span>
-                        <p>Nenhuma planilha encontrada</p>
-                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Faça upload de uma planilha na aba "Uploads"</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = spreadsheets.map(sheet => `
-                <div class="spreadsheet-item ${currentSpreadsheet && currentSpreadsheet.id === sheet.id ? 'selected' : ''}" 
-                     onclick="selectSpreadsheet('${sheet.id}')">
-                    <div class="spreadsheet-info">
-                        <div class="spreadsheet-name">${sheet.fileName}</div>
-                        <div class="spreadsheet-details">
-                            📊 ${sheet.records} registros • 📅 ${new Date(sheet.uploadDate).toLocaleDateString('pt-BR')}
-                        </div>
-                    </div>
-                    <div class="spreadsheet-actions">
-                        <button class="delete-button" onclick="event.stopPropagation(); openDeleteModal('${sheet.id}', '${sheet.fileName}')">
-                            🗑️ Excluir
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ✅ FUNÇÃO: Selecionar planilha
-        async function selectSpreadsheet(spreadsheetId) {
-            currentSpreadsheet = spreadsheets.find(sheet => sheet.id == spreadsheetId);
-            if (currentSpreadsheet) {
-                updateColumnsList(currentSpreadsheet.columns);
-                updateSpreadsheetsList();
-                updateCopiesInfo();
-                
-                // ✅ Mostrar seção de seleção de registros
-                document.getElementById('recordsSelectionSection').style.display = 'block';
-                
-                // ✅ Resetar seleção de registros
-                selectedRecords = null;
-                updateRecordsSelectionInfo();
-                
-                // ✅ Carregar dados da planilha para seleção
-                await loadSpreadsheetData();
-            }
-        }
-
-        // ✅ FUNÇÃO: Carregar dados da planilha para seleção
-        async function loadSpreadsheetData() {
-            try {
-                const response = await fetch(`${API_URL}/spreadsheets/${currentSpreadsheet.id}/data`);
-                const result = await response.json();
-                
-                if (result.success) {
-                    spreadsheetData = result.data;
-                    console.log('📊 Dados da planilha carregados:', spreadsheetData.length, 'registros');
-                } else {
-                    throw new Error(result.message);
-                }
-            } catch (error) {
-                console.error('❌ Erro ao carregar dados da planilha:', error);
-                alert('Erro ao carregar dados da planilha: ' + error.message);
-            }
-        }
-
-        // ✅ FUNÇÃO: Abrir modal de seleção de registros
-        function openRecordsModal() {
-            if (!spreadsheetData || spreadsheetData.length === 0) {
-                alert('❌ Nenhum dado disponível para seleção');
-                return;
-            }
-
-            // Preencher tabela com dados
-            const tableBody = document.getElementById('recordsTableBody');
-            tableBody.innerHTML = spreadsheetData.map(record => `
-                <tr>
-                    <td class="record-checkbox">
-                        <input type="checkbox" class="record-checkbox-input" 
-                               value="${record.index}" 
-                               ${selectedRecords && selectedRecords.includes(record.index) ? 'checked' : ''}>
-                    </td>
-                    <td>${record.index + 1}</td>
-                    <td class="record-preview" title="${record.preview}">${record.preview}</td>
-                </tr>
-            `).join('');
-
-            // Atualizar contadores
-            updateModalSelectionCount();
-            document.getElementById('modalTotalCount').textContent = spreadsheetData.length;
-
-            // Mostrar modal
-            document.getElementById('recordsModal').style.display = 'flex';
-        }
-
-        // ✅ FUNÇÃO: Fechar modal de seleção
-        function closeRecordsModal() {
-            document.getElementById('recordsModal').style.display = 'none';
-        }
-
-        // ✅ FUNÇÃO: Selecionar/deselecionar todos os registros
-        function toggleAllRecords(checked) {
-            const checkboxes = document.querySelectorAll('.record-checkbox-input');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = checked;
-            });
-            updateModalSelectionCount();
-        }
-
-        // ✅ FUNÇÃO: Selecionar todos os registros
-        function selectAllRecords() {
-            toggleAllRecords(true);
-        }
-
-        // ✅ FUNÇÃO: Deselecionar todos os registros
-        function deselectAllRecords() {
-            toggleAllRecords(false);
-        }
-
-        // ✅ FUNÇÃO: Selecionar apenas o primeiro registro
-        function selectFirstRecord() {
-            const checkboxes = document.querySelectorAll('.record-checkbox-input');
-            checkboxes.forEach((checkbox, index) => {
-                checkbox.checked = index === 0;
-            });
-            updateModalSelectionCount();
-        }
-
-        // ✅ FUNÇÃO: Atualizar contador no modal
-        function updateModalSelectionCount() {
-            const checkboxes = document.querySelectorAll('.record-checkbox-input:checked');
-            document.getElementById('modalSelectionCount').textContent = checkboxes.length;
-        }
-
-        // ✅ FUNÇÃO: Confirmar seleção de registros
-        function confirmRecordsSelection() {
-            const checkboxes = document.querySelectorAll('.record-checkbox-input:checked');
-            selectedRecords = Array.from(checkboxes).map(cb => parseInt(cb.value));
-            
-            updateRecordsSelectionInfo();
-            closeRecordsModal();
-        }
-
-        // ✅ FUNÇÃO: Atualizar informações da seleção na interface principal
-        function updateRecordsSelectionInfo() {
-            const selectionInfo = document.getElementById('recordsSelectionInfo');
-            const selectionSummary = document.getElementById('recordsSelectionSummary');
-            const selectedCount = document.getElementById('selectedCount');
-
-            if (selectedRecords && selectedRecords.length > 0) {
-                selectionInfo.innerHTML = `<strong>📋 Status:</strong> ${selectedRecords.length} registros selecionados`;
-                selectionSummary.style.display = 'block';
-                selectedCount.textContent = selectedRecords.length;
-            } else {
-                selectionInfo.innerHTML = `<strong>📋 Status:</strong> Todos os ${currentSpreadsheet.records} registros serão usados`;
-                selectionSummary.style.display = 'none';
-            }
-
-            updateCopiesInfo();
-        }
-
-        // ✅ FUNÇÃO: Atualizar lista de colunas
-        function updateColumnsList(columns) {
-            const container = document.getElementById('columnsContainer');
-            
-            if (!columns || columns.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <span class="icon">❌</span>
-                        <p>Nenhuma coluna encontrada na planilha</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = columns.map(column => `
-                <div class="column-item">
-                    <label>
-                        <input type="checkbox" name="columns" value="${column.key}" data-name="${column.name}" checked>
-                        ${column.name}
-                    </label>
-                </div>
-            `).join('');
-        }
-
-        // ✅ FUNÇÃO: Atualizar descrição do template
-        function updateTemplateDescription() {
-            const template = document.getElementById('labelTemplate').value;
-            document.getElementById('templateDescription').textContent = templateDescriptions[template] + " Cada etiqueta terá um número de identificação único no rodapé.";
-        }
-
-        // ✅ FUNÇÃO: Abrir modal de confirmação de exclusão
-        function openDeleteModal(spreadsheetId, fileName) {
-            spreadsheetToDelete = spreadsheetId;
-            document.getElementById('deleteModalText').textContent = 
-                `Tem certeza que deseja excluir a planilha "${fileName}"? Esta ação não pode ser desfeita.`;
-            document.getElementById('deleteModal').style.display = 'flex';
-        }
-
-        // ✅ FUNÇÃO: Fechar modal de exclusão
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-            spreadsheetToDelete = null;
-        }
-
-        // ✅ FUNÇÃO: Confirmar exclusão da planilha
-        async function confirmDelete() {
-            if (!spreadsheetToDelete) return;
-
-            const confirmBtn = document.getElementById('confirmDeleteBtn');
-            confirmBtn.innerHTML = '⏳ Excluindo...';
-            confirmBtn.disabled = true;
-
-            try {
-                const response = await fetch(`${API_URL}/spreadsheets/${spreadsheetToDelete}`, {
-                    method: 'DELETE'
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    spreadsheets = spreadsheets.filter(sheet => sheet.id != spreadsheetToDelete);
-                    
-                    if (currentSpreadsheet && currentSpreadsheet.id == spreadsheetToDelete) {
-                        currentSpreadsheet = null;
-                        document.getElementById('columnsContainer').innerHTML = `
-                            <div class="empty-state">
-                                <span class="icon">📊</span>
-                                <p>Selecione uma planilha para ver as colunas disponíveis</p>
-                            </div>
-                        `;
-                        document.getElementById('recordsSelectionSection').style.display = 'none';
-                    }
-                    
-                    updateSpreadsheetsList();
-                    updateCopiesInfo();
-                    
-                    document.getElementById('loadStatus').innerHTML = 
-                        `<div class="success-message">✅ ${result.message}</div>`;
-                    
-                    console.log('✅ Planilha excluída com sucesso:', spreadsheetToDelete);
-                } else {
-                    throw new Error(result.message);
-                }
-            } catch (error) {
-                console.error('❌ Erro ao excluir planilha:', error);
-                document.getElementById('loadStatus').innerHTML = 
-                    `<div class="error-message">❌ Erro ao excluir: ${error.message}</div>`;
-            } finally {
-                closeDeleteModal();
-                confirmBtn.innerHTML = 'Sim, Excluir';
-                confirmBtn.disabled = false;
-            }
-        }
-
-        // ✅ FUNÇÃO: Preview das etiquetas (APENAS MODELO SIMPLES)
-        function previewLabels() {
-            const previewArea = document.getElementById('previewArea');
-            const selectedColumns = Array.from(document.querySelectorAll('input[name="columns"]:checked'))
-                .map(cb => ({ key: cb.value, name: cb.getAttribute('data-name') }));
-
-            if (!currentSpreadsheet || selectedColumns.length === 0) {
-                previewArea.innerHTML = `<div class="preview-placeholder"><div class="icon">⚠️</div><p>Selecione uma planilha e colunas</p></div>`;
-                return;
-            }
-
-            const template = document.getElementById('labelTemplate').value;
-            const copies = parseInt(document.getElementById('copiesPerLabel').value) || 1;
-            const totalRecords = selectedRecords ? selectedRecords.length : currentSpreadsheet.records;
-            const totalEtiquetas = totalRecords * copies;
-            
-            let previewHTML = `
-                <div style="text-align: center; width: 100%;">
-                    <h3 style="margin-bottom: 1rem; color: var(--text);">
-                        Preview - ${totalEtiquetas} etiquetas
-                    </h3>
-                    <p style="color: var(--text-light); margin-bottom: 1rem;">
-                        Estilo: <strong>${document.getElementById('labelTemplate').selectedOptions[0].text}</strong> | 
-                        Registros: <strong>${totalRecords} selecionados</strong> |
-                        Cópias: <strong>${copies}x por registro</strong>
-                    </p>
-                    <div style="background: #f0f9ff; padding: 10px; border-radius: 6px; margin-bottom: 1rem;">
-                        <strong>📊 Configuração:</strong> ${totalRecords} registros × ${copies} cópias = ${totalEtiquetas} etiquetas totais
-                    </div>
-                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
-            `;
-
-            // Mostrar apenas 3 etiquetas de exemplo no preview
-            const previewCount = Math.min(3, totalEtiquetas);
-            
-            for (let i = 0; i < previewCount; i++) {
-                const numeroAtual = i + 1;
-                const registroOrigem = Math.ceil(numeroAtual / copies);
-                const numeracao = `${numeroAtual}/${totalEtiquetas}`;
-                
-                previewHTML += `
-                    <div class="label-preview">
-                        <div style="border-bottom: 1px solid #e2e8f0; margin-bottom: 0.5rem; padding-bottom: 0.5rem; background: #f8f9fa; padding: 8px; margin: -1rem -1rem 0.5rem -1rem; border-radius: 6px 6px 0 0;">
-                            <strong style="color: #333;">ETIQUETA ${numeracao}</strong>
-                            <div style="font-size: 0.7rem; color: #666;">Cópia ${((numeroAtual - 1) % copies) + 1} de ${copies}</div>
-                        </div>
-                `;
-                
-                selectedColumns.forEach(col => {
-                    previewHTML += `<div style="margin-bottom: 4px; text-align: left;"><strong>${col.name}:</strong> [Valor ${registroOrigem}]</div>`;
-                });
-                
-                previewHTML += `
-                        <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #f3f4f6; font-size: 0.7rem; color: #666; text-align: right;">
-                            ${numeracao} (Registro ${registroOrigem})
-                        </div>
-                    </div>
-                `;
-            }
-
-            previewHTML += `
-                    </div>
-                    <p style="margin-top: 1.5rem; color: var(--text-light); font-size: 0.9rem;">
-                        📄 <strong>${totalEtiquetas}</strong> etiquetas serão geradas no estilo SIMPLES
-                    </p>
-                </div>
-            `;
-
-            previewArea.innerHTML = previewHTML;
-        }
-
-        // ✅ FUNÇÃO: Gerar etiquetas EM PDF
-        async function generateLabels() {
-            if (!currentSpreadsheet) {
-                alert('❌ Selecione uma planilha primeiro!');
-                return;
-            }
-
-            const selectedColumns = Array.from(document.querySelectorAll('input[name="columns"]:checked'));
-            if (selectedColumns.length === 0) {
-                alert('❌ Selecione pelo menos uma coluna para mostrar nas etiquetas!');
-                return;
-            }
-
-            const columnKeys = selectedColumns.map(cb => cb.value).join(',');
-            const columnNames = selectedColumns.map(cb => cb.getAttribute('data-name')).join(', ');
-            const template = document.getElementById('labelTemplate').value;
-            const copies = parseInt(document.getElementById('copiesPerLabel').value) || 1;
-            
-            if (copies < 1 || copies > 1000) {
-                alert('❌ Número de cópias deve estar entre 1 e 1000');
-                return;
-            }
-
-            const totalRecords = selectedRecords ? selectedRecords.length : currentSpreadsheet.records;
-            const totalEtiquetas = totalRecords * copies;
-            
-            try {
-                const generateBtn = document.getElementById('generateBtn');
-                const originalText = generateBtn.innerHTML;
-                generateBtn.innerHTML = '⏳ Gerando PDF...';
-                generateBtn.disabled = true;
-
-                // ✅ URL com apenas modelo simples
-                let pdfUrl = `${API_URL}/generate-pdf/${currentSpreadsheet.id}?columns=${columnKeys}&template=${template}&copies=${copies}`;
-                
-                // Adicionar parâmetro de registros selecionados se houver
-                if (selectedRecords && selectedRecords.length > 0) {
-                    pdfUrl += `&rows=${selectedRecords.join(',')}`;
-                }
-
-                console.log('🔗 Gerando PDF com configuração:', {
-                    planilha: currentSpreadsheet.fileName,
-                    registros: totalRecords,
-                    copias: copies,
-                    total: totalEtiquetas,
-                    selecionados: selectedRecords,
-                    template: template
-                });
-
-                const response = await fetch(pdfUrl);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Erro HTTP! status: ${response.status} - ${errorText}`);
-                }
-
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('pdf')) {
-                    const errorData = await response.text();
-                    throw new Error('A resposta não é um PDF válido');
-                }
-
-                const pdfBlob = await response.blob();
-                const url = window.URL.createObjectURL(pdfBlob);
-                
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                
-                // Nome do arquivo baseado na seleção
-                const fileName = selectedRecords 
-                    ? `etiquetas-${currentSpreadsheet.fileName.replace('.xlsx', '').replace('.xls', '')}-${selectedRecords.length}registros-${copies}x.pdf`
-                    : `etiquetas-${currentSpreadsheet.fileName.replace('.xlsx', '').replace('.xls', '')}-${copies}x.pdf`;
-                
-                a.download = fileName;
-                
-                document.body.appendChild(a);
-                a.click();
-                
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-
-                alert(`✅ PDF gerado com sucesso!\n\n` +
-                      `📊 Planilha: ${currentSpreadsheet.fileName}\n` +
-                      `📦 Quantidade: ${totalEtiquetas} etiquetas\n` +
-                      `📋 Configuração: ${totalRecords} registros × ${copies} cópias\n` +
-                      `🎨 Estilo: Simples (Padrão)\n\n` +
-                      `📄 O download do PDF foi iniciado!`);
-
-            } catch (error) {
-                console.error('❌ Erro ao gerar PDF:', error);
-                alert('❌ Erro ao gerar PDF:\n' + error.message);
-            } finally {
-                const generateBtn = document.getElementById('generateBtn');
-                generateBtn.innerHTML = '🏷️ Gerar Etiquetas PDF';
-                generateBtn.disabled = false;
-            }
-        }
-
-        // ✅ EVENT LISTENERS
-        document.getElementById('labelTemplate').addEventListener('change', updateTemplateDescription);
-        document.getElementById('copiesPerLabel').addEventListener('input', updateCopiesInfo);
-
-        // ✅ CARREGAR quando a página carregar
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Página Gerar Etiquetas carregada');
-            loadSpreadsheets();
-            updateTemplateDescription();
-            updateCopiesInfo();
-        });
-    </script>
-</body>
-</html>
+// backend/server.js - VERSÃO SEM ROTA PROBLEMÁTICA
+const express = require('express');
+const multer = require('multer');
+const cors = require('cors');
+const ExcelJS = require('exceljs');
+const path = require('path');
+const { Readable } = require('stream');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ✅ CORS BÁSICO
+app.use(cors());
+
+// Middlewares
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// ✅ CONFIGURAÇÃO SIMPLES
+const frontendPath = path.join(__dirname, '../frontend');
+console.log('📁 Frontend path:', frontendPath);
+
+// Servir arquivos estáticos do frontend
+app.use(express.static(frontendPath));
+
+// ✅ CONFIGURAÇÃO DE UPLOAD
+const upload = multer({ storage: multer.memoryStorage() });
+
+// ✅ VARIÁVEL GLOBAL PARA ARMAZENAR DADOS
+let spreadsheetsData = new Map();
+
+// ========== ROTAS DA API ==========
+
+// Rota de teste
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    success: true,
+    message: 'Backend funcionando!',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Rota de UPLOAD
+app.post('/api/upload', upload.single('spreadsheet'), async (req, res) => {
+  try {
+    console.log('📥 Recebendo upload...');
+    
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nenhum arquivo enviado'
+      });
+    }
+
+    console.log('📥 Processando arquivo:', req.file.originalname);
+
+    // Processar o Excel
+    const processedData = await processExcelFromBuffer(req.file.buffer);
+
+    // Gerar ID único
+    const spreadsheetId = Date.now().toString();
+    
+    // Salvar dados em memória
+    const tempData = {
+      id: spreadsheetId,
+      originalName: req.file.originalname,
+      uploadDate: new Date().toISOString(),
+      data: processedData.data,
+      columns: processedData.columns
+    };
+
+    spreadsheetsData.set(spreadsheetId, tempData);
+
+    console.log('✅ Arquivo processado:', processedData.data.length, 'registros');
+
+    res.json({
+      success: true,
+      message: `Planilha processada com sucesso! ${processedData.data.length} registros.`,
+      data: {
+        id: tempData.id,
+        fileName: req.file.originalname,
+        records: processedData.data.length,
+        columns: processedData.columns
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao processar planilha:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao processar planilha: ' + error.message
+    });
+  }
+});
+
+// Rota para listar planilhas
+app.get('/api/spreadsheets', (req, res) => {
+  try {
+    const files = Array.from(spreadsheetsData.values()).map(fileData => ({
+      id: fileData.id,
+      fileName: fileData.originalName,
+      uploadDate: fileData.uploadDate,
+      records: fileData.data ? fileData.data.length : 0,
+      columns: fileData.columns || []
+    }));
+    
+    res.json({ 
+      success: true,
+      spreadsheets: files 
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao listar planilhas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno ao listar planilhas'
+    });
+  }
+});
+
+// Rota para obter dados da planilha
+app.get('/api/spreadsheets/:spreadsheetId/data', (req, res) => {
+  try {
+    const spreadsheetId = req.params.spreadsheetId;
+    const limit = parseInt(req.query.limit) || 50;
+
+    const spreadsheetData = spreadsheetsData.get(spreadsheetId);
+    
+    if (!spreadsheetData) {
+      return res.status(404).json({
+        success: false,
+        message: 'Planilha não encontrada'
+      });
+    }
+
+    const limitedData = spreadsheetData.data.slice(0, limit).map((row, index) => ({
+      index: index,
+      data: row,
+      preview: Object.keys(row)
+        .filter(key => key !== '_id')
+        .slice(0, 3)
+        .map(key => {
+          const column = spreadsheetData.columns.find(col => col.key === key);
+          const columnName = column ? column.name : key;
+          const value = formatValue(row[key]);
+          return `${columnName}: ${value}`;
+        })
+        .join(' | ')
+    }));
+
+    res.json({
+      success: true,
+      data: limitedData,
+      totalRecords: spreadsheetData.data.length,
+      columns: spreadsheetData.columns
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao obter dados da planilha:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao obter dados'
+    });
+  }
+});
+
+// Rota para gerar PDF
+app.get('/api/generate-pdf/:spreadsheetId', async (req, res) => {
+  try {
+    const spreadsheetId = req.params.spreadsheetId;
+    const selectedColumns = req.query.columns ? req.query.columns.split(',') : [];
+    const copies = parseInt(req.query.copies) || 1;
+
+    const spreadsheetData = spreadsheetsData.get(spreadsheetId);
+    
+    if (!spreadsheetData) {
+      return res.status(404).json({
+        success: false,
+        message: 'Planilha não encontrada'
+      });
+    }
+
+    const pdfBuffer = await generateLabelsPDF(
+      spreadsheetData.data, 
+      selectedColumns, 
+      spreadsheetData.columns,
+      copies
+    );
+    
+    const fileName = `etiquetas-${Date.now()}.pdf`;
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(pdfBuffer);
+    
+    console.log('✅ PDF gerado com sucesso!');
+
+  } catch (error) {
+    console.error('❌ Erro ao gerar PDF:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao gerar PDF'
+    });
+  }
+});
+
+// ========== FUNÇÕES AUXILIARES ==========
+async function processExcelFromBuffer(buffer) {
+  try {
+    const workbook = new ExcelJS.Workbook();
+    const stream = new Readable();
+    stream.push(buffer);
+    stream.push(null);
+    
+    await workbook.xlsx.read(stream);
+    const worksheet = workbook.worksheets[0];
+    
+    const data = [];
+    const columns = [];
+
+    // Ler cabeçalhos
+    worksheet.getRow(1).eachCell((cell, colNumber) => {
+      columns.push({ 
+        name: cell.value?.toString() || `Coluna ${colNumber}`, 
+        key: `col_${colNumber}` 
+      });
+    });
+
+    // Ler dados
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+
+      const rowData = { _id: `row_${rowNumber}` };
+      row.eachCell((cell, colNumber) => {
+        rowData[`col_${colNumber}`] = cell.value;
+      });
+
+      if (Object.values(rowData).some(val => val !== undefined && val !== null && val !== '')) {
+        data.push(rowData);
+      }
+    });
+
+    return { columns, data };
+  } catch (error) {
+    console.error('❌ Erro no processExcelFromBuffer:', error);
+    throw error;
+  }
+}
+
+function formatValue(value) {
+  if (value === null || value === undefined || value === '') return '';
+  if (value instanceof Date) return value.toLocaleDateString('pt-BR');
+  if (typeof value === 'string' && value.length > 50) return value.substring(0, 47) + '...';
+  return String(value);
+}
+
+// ✅ FUNÇÃO: Gerar PDF
+async function generateLabelsPDF(data, selectedColumns, allColumns, copiesPerLabel = 1) {
+  return new Promise((resolve, reject) => {
+    try {
+      const PDFDocument = require('pdfkit');
+      
+      const pageWidth = 110 * 2.83465;
+      const pageHeight = pageWidth;
+      
+      const doc = new PDFDocument({ 
+        margin: 0, 
+        size: [pageWidth, pageHeight]
+      });
+      
+      const buffers = [];
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => {
+        const pdfData = Buffer.concat(buffers);
+        resolve(pdfData);
+      });
+
+      const margin = 10;
+      const labelWidth = pageWidth - (margin * 2);
+      const labelHeight = pageHeight - (margin * 2);
+
+      let labelCount = 0;
+      const totalLabels = data.length * copiesPerLabel;
+
+      data.forEach((row, rowIndex) => {
+        for (let copyIndex = 0; copyIndex < copiesPerLabel; copyIndex++) {
+          if (labelCount > 0) doc.addPage();
+          
+          labelCount++;
+          drawSimpleLabel(doc, row, selectedColumns, allColumns, margin, margin, labelWidth, labelHeight, labelCount, totalLabels);
+        }
+      });
+
+      doc.end();
+
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+// ✅ FUNÇÃO: Desenhar etiqueta
+function drawSimpleLabel(doc, row, selectedColumns, allColumns, x, y, width, height, currentNumber, totalLabels) {
+  // Borda
+  doc.rect(x, y, width - 1, height - 1)
+     .strokeColor('#cccccc')
+     .lineWidth(1)
+     .stroke();
+
+  const padding = 20;
+  const leftX = x + padding;
+  const textWidth = width - (padding * 2);
+  let currentY = y + padding;
+
+  // Cabeçalho
+  doc.fontSize(16)
+     .font('Helvetica-Bold')
+     .fillColor('#333333')
+     .text(`ETIQUETA ${currentNumber}/${totalLabels}`, leftX, currentY, {
+       width: textWidth,
+       align: 'left'
+     });
+  
+  currentY += 30;
+
+  // Conteúdo
+  doc.fontSize(12)
+     .font('Helvetica')
+     .fillColor('#000000');
+
+  selectedColumns.forEach(columnKey => {
+    const column = allColumns.find(col => col.key === columnKey);
+    if (column) {
+      const value = formatValue(row[columnKey]);
+      if (value && value !== 'undefined' && value !== 'null') {
+        const text = `${column.name}: ${value}`;
+        if (currentY < y + height - 20) {
+          doc.text(text, leftX, currentY, { width: textWidth, align: 'left' });
+          currentY += 20;
+        }
+      }
+    }
+  });
+
+  // Rodapé
+  const footerY = y + height - 15;
+  doc.fontSize(10)
+     .fillColor('#666666')
+     .text(`${currentNumber}/${totalLabels}`, x + width - padding - 10, footerY, {
+       align: 'right'
+     });
+}
+
+// ✅ ROTAS PARA AS PÁGINAS HTML (SEM WILDCARD)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
+app.get('/upload', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'upload.html'));
+});
+
+app.get('/generate', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'generate.html'));
+});
+
+// Iniciar servidor
+app.listen(PORT, () => {
+  console.log('===================================');
+  console.log('🎉 SISTEMA DE ETIQUETAS RODANDO!');
+  console.log('📍 Local: http://localhost:' + PORT);
+  console.log('===================================');
+});
+
+// Export para Vercel
+module.exports = app;
