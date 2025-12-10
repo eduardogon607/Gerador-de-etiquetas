@@ -3,35 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Etiquetas</title>
+    <title>Sistema de Etiquetas - Conexão Corrigida</title>
     <style>
-        /* RESET MOBILE */
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-        }
+        /* RESET E VARIÁVEIS */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --primary: #6366f1; 
-            --primary-dark: #4f46e5; 
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
             --secondary: #f8fafc;
-            --accent: #06d6a0; 
-            --text: #1e293b; 
-            --text-light: #64748b;
-            --border: #e2e8f0; 
-            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --accent: #06d6a0;
+            --warning: #f59e0b;
             --danger: #ef4444;
+            --success: #10b981;
+            --info: #3b82f6;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --multi-line: #8b5cf6;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh; 
-            color: var(--text); 
+            min-height: 100vh;
+            color: var(--text);
             line-height: 1.5;
-            padding: 0;
-            margin: 0;
         }
         
         .container {
@@ -41,36 +39,42 @@
             overflow-x: hidden;
         }
         
-        /* HEADER MOBILE */
+        /* HEADER */
         .header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white; 
+            color: white;
             padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         .header h1 {
             font-size: 1.4rem;
-            font-weight: 700; 
+            font-weight: 700;
             margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        /* TABS MOBILE */
+        /* TABS */
         .tabs {
             display: flex;
             background: rgba(255,255,255,0.15);
-            border-radius: 10px; 
+            border-radius: 10px;
             padding: 3px;
             gap: 2px;
         }
         
         .tab {
             padding: 10px 12px;
-            color: white; 
-            text-decoration: none;
-            background: transparent; 
-            border: none; 
+            color: white;
+            background: transparent;
+            border: none;
             border-radius: 8px;
-            cursor: pointer; 
+            cursor: pointer;
             font-size: 0.85rem;
             font-weight: 500;
             transition: all 0.3s ease;
@@ -83,54 +87,54 @@
         }
         
         .tab.active {
-            background: white; 
+            background: white;
             color: var(--primary);
         }
         
-        /* MAIN CONTENT MOBILE */
-        .main-content { 
+        /* MAIN CONTENT */
+        .main-content {
             padding: 1rem;
-            background: var(--secondary); 
+            background: var(--secondary);
             min-height: calc(100vh - 140px);
         }
         
         .config-card, .preview-card {
-            background: white; 
+            background: white;
             padding: 1.5rem 1rem;
             border-radius: 12px;
-            box-shadow: var(--shadow); 
-            margin-bottom: 1rem; 
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
             border: 1px solid var(--border);
         }
         
         .config-card h2, .preview-card h2 {
-            color: var(--text); 
-            margin-bottom: 1rem; 
+            color: var(--text);
+            margin-bottom: 1rem;
             font-size: 1.3rem;
-            display: flex; 
-            align-items: center; 
+            display: flex;
+            align-items: center;
             gap: 8px;
         }
         
-        /* FORM MOBILE */
-        .form-group { 
-            margin-bottom: 1.5rem; 
+        /* FORM */
+        .form-group {
+            margin-bottom: 1.5rem;
         }
         
         .form-group label {
-            display: block; 
-            margin-bottom: 0.5rem; 
-            font-weight: 600; 
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
             color: var(--text);
             font-size: 0.95rem;
         }
         
         .form-select, .form-input {
-            width: 100%; 
-            padding: 12px 14px; 
+            width: 100%;
+            padding: 12px 14px;
             border: 2px solid var(--border);
-            border-radius: 8px; 
-            font-size: 1rem; 
+            border-radius: 8px;
+            font-size: 1rem;
             transition: all 0.3s ease;
             background: white;
         }
@@ -141,74 +145,98 @@
             font-size: 1rem;
         }
         
-        /* COLUNAS MOBILE */
+        /* COLUNAS */
         .columns-grid {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem; 
+            gap: 0.75rem;
             margin-top: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
         }
         
         .column-item {
-            background: var(--secondary); 
+            background: var(--secondary);
             padding: 1rem;
             border-radius: 8px;
             border: 1px solid var(--border);
+            transition: all 0.3s ease;
         }
         
-        .column-item label {
-            display: flex; 
-            align-items: center; 
+        .column-item.has-multi-line {
+            border-left: 4px solid var(--multi-line);
+        }
+        
+        .column-item:hover {
+            border-color: var(--primary);
+        }
+        
+        .column-header {
+            display: flex;
+            align-items: center;
             gap: 10px;
-            font-weight: normal; 
-            margin-bottom: 0; 
-            cursor: pointer;
-            font-size: 0.95rem;
+            margin-bottom: 8px;
         }
         
-        /* PREVIEW MOBILE */
-        .preview-area {
-            background: white; 
-            border: 2px dashed var(--border); 
+        /* BADGES */
+        .badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
             border-radius: 12px;
-            padding: 1.5rem; 
-            min-height: 200px; 
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .badge-multi-line {
+            background-color: #ede9fe;
+            color: #6d28d9;
+        }
+        
+        /* PREVIEW */
+        .preview-area {
+            background: white;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-height: 200px;
             text-align: center;
-            display: flex; 
-            align-items: center; 
+            display: flex;
+            align-items: center;
             justify-content: center;
         }
         
-        .preview-placeholder { 
-            color: var(--text-light); 
+        .preview-placeholder {
+            color: var(--text-light);
         }
         
         .label-preview {
-            background: white; 
-            border: 2px solid var(--primary); 
+            background: white;
+            border: 2px solid var(--primary);
             border-radius: 8px;
-            padding: 1rem; 
-            margin: 0.5rem; 
+            padding: 1rem;
+            margin: 0.5rem;
             display: inline-block;
-            box-shadow: var(--shadow); 
-            min-width: 160px;
+            box-shadow: var(--shadow);
+            min-width: 180px;
             max-width: 100%;
+            text-align: left;
         }
         
-        /* BOTÕES MOBILE */
-        .action-buttons { 
-            display: flex; 
+        /* BOTÕES */
+        .action-buttons {
+            display: flex;
             flex-direction: column;
-            gap: 0.75rem; 
+            gap: 0.75rem;
             margin-top: 2rem;
         }
         
         .btn {
-            padding: 14px 20px; 
-            border: none; 
+            padding: 14px 20px;
+            border: none;
             border-radius: 10px;
-            font-size: 1rem; 
-            font-weight: 600; 
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: center;
@@ -226,32 +254,41 @@
         }
         
         .btn-secondary {
-            background: var(--secondary); 
-            color: var(--text); 
+            background: var(--secondary);
+            color: var(--text);
             border: 2px solid var(--border);
         }
         
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
         .btn:disabled {
-            opacity: 0.6; 
+            opacity: 0.6;
             cursor: not-allowed;
         }
         
-        /* LISTA MOBILE */
+        /* LISTA DE PLANILHAS */
         .spreadsheet-item {
-            display: flex; 
+            display: flex;
             flex-direction: column;
             gap: 0.75rem;
-            padding: 1rem; 
-            background: var(--secondary); 
+            padding: 1rem;
+            background: var(--secondary);
             border-radius: 8px;
-            margin-bottom: 0.75rem; 
+            margin-bottom: 0.75rem;
             border: 1px solid var(--border);
-            cursor: pointer; 
+            cursor: pointer;
             transition: all 0.3s ease;
         }
         
+        .spreadsheet-item:hover {
+            border-color: var(--primary);
+        }
+        
         .spreadsheet-item.selected {
-            background: #e0e7ff; 
+            background: #e0e7ff;
             border-color: var(--primary);
         }
         
@@ -260,220 +297,89 @@
         }
         
         .spreadsheet-name {
-            font-weight: 600; 
+            font-weight: 600;
             color: var(--text);
             font-size: 0.95rem;
             word-break: break-word;
         }
         
         .spreadsheet-details {
-            font-size: 0.8rem; 
+            font-size: 0.8rem;
             color: var(--text-light);
             margin-top: 4px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         
         /* BOTÕES AUXILIARES */
-        .refresh-button {
-            background: var(--accent); 
-            color: white; 
-            border: none;
-            padding: 10px 16px; 
-            border-radius: 8px; 
-            cursor: pointer;
-            font-size: 0.85rem;
+        .action-buttons-row {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 0.5rem;
-            width: 100%;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
         }
         
-        .selection-button {
-            background: var(--primary); 
-            color: white; 
+        .refresh-button {
+            background: var(--accent);
+            color: white;
             border: none;
-            padding: 10px 16px; 
-            border-radius: 8px; 
+            padding: 10px 16px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 0.85rem;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            margin-top: 0.5rem;
-            width: 100%;
+            flex: 1;
         }
         
         /* MENSAGENS */
-        .success-message {
-            background: #d1fae5; 
-            color: #065f46; 
+        .message {
             padding: 12px;
-            border-radius: 8px; 
-            margin-top: 1rem; 
-            text-align: center;
+            border-radius: 8px;
+            margin-top: 1rem;
             font-size: 0.9rem;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
         }
         
         .error-message {
-            background: #fee2e2; 
-            color: #991b1b; 
-            padding: 12px;
-            border-radius: 8px; 
-            margin-top: 1rem; 
-            text-align: center;
-            font-size: 0.9rem;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .info-message {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
         }
         
         .empty-state {
-            text-align: center; 
-            padding: 2rem 1rem; 
-            color: var(--text-light);
-        }
-        
-        .empty-state .icon { 
-            font-size: 2.5rem; 
-            margin-bottom: 1rem; 
-            display: block; 
-        }
-        
-        .template-info {
-            background: #f8f9fa; 
-            padding: 12px; 
-            border-radius: 8px;
-            margin-top: 10px; 
-            font-size: 0.85rem; 
-            color: var(--text-light);
-        }
-        
-        .copies-info {
-            background: #f0f9ff; 
-            padding: 12px; 
-            border-radius: 8px;
-            margin-top: 10px; 
-            font-size: 0.85rem; 
-            color: #0369a1;
-        }
-        
-        .records-selection {
-            background: #fff7ed; 
-            padding: 1rem; 
-            border-radius: 8px;
-            margin-top: 10px; 
-            border: 1px solid #fed7aa;
-        }
-        
-        /* INPUT GROUP MOBILE */
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .input-group span {
-            color: var(--text-light);
-            font-size: 0.9rem;
             text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-light);
         }
         
-        /* MODAL MOBILE */
-        .modal-overlay {
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5); 
-            display: flex;
-            align-items: center; 
-            justify-content: center; 
-            z-index: 1000;
-            padding: 1rem;
-        }
-        
-        .modal {
-            background: white; 
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: var(--shadow); 
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .modal h3 {
-            margin-bottom: 1rem; 
-            color: var(--text);
-            font-size: 1.3rem;
-        }
-        
-        .modal-buttons {
-            display: flex; 
-            flex-direction: column;
-            gap: 0.75rem; 
-            margin-top: 1.5rem;
-        }
-        
-        .selection-actions {
-            display: flex; 
-            flex-direction: column;
-            gap: 0.5rem; 
-            margin: 10px 0;
-        }
-        
-        .selection-summary {
-            background: #f0f9ff; 
-            padding: 12px; 
-            border-radius: 8px;
-            margin: 10px 0; 
-            font-size: 0.85rem;
-        }
-        
-        /* TABELA MOBILE */
-        .records-table {
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 1rem;
-            font-size: 0.85rem;
-        }
-        
-        .records-table th,
-        .records-table td {
-            padding: 10px 8px; 
-            text-align: left; 
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .records-table th {
-            background: var(--secondary); 
-            font-weight: 600;
-            font-size: 0.8rem;
-        }
-        
-        .record-checkbox {
-            width: 40px; 
-            text-align: center;
-        }
-        
-        .record-preview {
-            max-width: 150px; 
-            overflow: hidden; 
-            text-overflow: ellipsis;
-            white-space: nowrap; 
-            font-size: 0.8rem;
-        }
-        
-        /* PÁGINAS */
-        .page {
-            display: none;
-        }
-        
-        .page.active {
+        .empty-state .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
             display: block;
         }
         
-        /* UPLOAD PAGE */
+        /* UPLOAD AREA */
         .upload-area {
             border: 2px dashed var(--border);
             border-radius: 12px;
@@ -481,20 +387,50 @@
             text-align: center;
             background: var(--secondary);
             margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
         }
         
         .upload-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
+            color: var(--primary);
         }
         
         .file-input {
             width: 100%;
             padding: 1rem;
             margin: 1rem 0;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: white;
         }
         
-        /* TABLET */
+        /* LOADING */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* PÁGINAS */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* RESPONSIVO */
         @media (min-width: 768px) {
             .header {
                 padding: 1.5rem 2rem;
@@ -531,41 +467,8 @@
                 flex-direction: row;
                 align-items: center;
             }
-            
-            .refresh-button, .selection-button {
-                width: auto;
-                margin-top: 0;
-            }
-            
-            .input-group {
-                flex-direction: row;
-                align-items: center;
-                gap: 1rem;
-            }
-            
-            .form-input-small {
-                width: 120px;
-            }
-            
-            .input-group span {
-                text-align: left;
-            }
-            
-            .modal {
-                width: 600px;
-                padding: 2rem;
-            }
-            
-            .modal-buttons {
-                flex-direction: row;
-            }
-            
-            .selection-actions {
-                flex-direction: row;
-            }
         }
         
-        /* DESKTOP */
         @media (min-width: 1024px) {
             .container {
                 max-width: 1200px;
@@ -574,32 +477,7 @@
             }
             
             .columns-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
-        }
-        
-        /* CELULARES PEQUENOS */
-        @media (max-width: 360px) {
-            .header {
-                padding: 0.75rem;
-            }
-            
-            .header h1 {
-                font-size: 1.2rem;
-            }
-            
-            .tab {
-                padding: 8px 10px;
-                font-size: 0.8rem;
-            }
-            
-            .config-card, .preview-card {
-                padding: 1rem;
-            }
-            
-            .label-preview {
-                min-width: 140px;
-                padding: 0.75rem;
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             }
         }
     </style>
@@ -620,15 +498,11 @@
             <div id="inicio" class="page active">
                 <div class="config-card">
                     <h2>🎉 Bem-vindo ao Sistema de Etiquetas!</h2>
-                    <p>Este sistema permite fazer upload de planilhas Excel e gerar etiquetas em PDF de forma rápida e fácil.</p>
+                    <p>Sistema completo para upload de planilhas Excel e geração de etiquetas em PDF.</p>
                     
-                    <div style="margin-top: 2rem;">
-                        <h3>📋 Como usar:</h3>
-                        <ol style="margin-left: 1.5rem; margin-top: 1rem; line-height: 2;">
-                            <li><strong>Uploads:</strong> Faça upload da sua planilha Excel (.xlsx, .xls)</li>
-                            <li><strong>Gerar Etiquetas:</strong> Selecione a planilha, configure as colunas e gere o PDF</li>
-                            <li><strong>Imprimir:</strong> Baixe e imprima suas etiquetas! 🖨️</li>
-                        </ol>
+                    <div id="systemStatus" style="margin: 2rem 0; text-align: center;">
+                        <div class="loading"></div>
+                        <p style="margin-top: 1rem; color: var(--text-light);">Verificando conexão...</p>
                     </div>
                     
                     <div class="action-buttons">
@@ -649,11 +523,11 @@
                     
                     <div class="upload-area">
                         <div class="upload-icon">📊</div>
-                        <h3>Arraste e solte sua planilha aqui</h3>
-                        <p>ou</p>
+                        <h3>Selecione sua planilha Excel</h3>
+                        <p>Formatos suportados: .xlsx, .xls</p>
                         <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
-                        <button class="btn btn-primary" onclick="uploadFile()">
-                            📤 Fazer Upload da Planilha
+                        <button class="btn btn-primary" onclick="uploadFile()" id="uploadBtn">
+                            📤 Fazer Upload
                         </button>
                     </div>
                     
@@ -661,9 +535,11 @@
 
                     <div class="form-group">
                         <label>Planilhas Carregadas:</label>
-                        <button class="refresh-button" onclick="loadSpreadsheets()">
-                            🔄 Atualizar Lista
-                        </button>
+                        <div class="action-buttons-row">
+                            <button class="refresh-button" onclick="loadSpreadsheets()">
+                                🔄 Atualizar Lista
+                            </button>
+                        </div>
                         <div id="spreadsheetsList">
                             <div class="empty-state">
                                 <span class="icon">📊</span>
@@ -695,21 +571,22 @@
 
                     <div class="form-group" id="recordsSelectionSection" style="display: none;">
                         <label>Selecionar Registros:</label>
-                        <button class="selection-button" onclick="openRecordsModal()">
+                        <button class="btn btn-secondary" onclick="openRecordsModal()">
                             📝 Escolher Registros
                         </button>
-                        <div class="records-selection">
-                            <div id="recordsSelectionInfo">
-                                <strong>📋 Status:</strong> Todos os registros serão usados
-                            </div>
-                            <div class="selection-summary" id="recordsSelectionSummary" style="display: none;">
-                                <strong>✅ Selecionados:</strong> <span id="selectedCount">0</span> registros
-                            </div>
+                        <div id="recordsSelectionInfo">
+                            <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 0.5rem;">
+                                Todos os registros serão usados
+                            </p>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label>Colunas para Mostrar:</label>
+                        <div class="action-buttons-row">
+                            <button class="btn btn-secondary" onclick="selectAllColumns()">✅ Selecionar Todas</button>
+                            <button class="btn btn-secondary" onclick="deselectAllColumns()">❌ Desmarcar Todas</button>
+                        </div>
                         <div id="columnsContainer" class="columns-grid">
                             <div class="empty-state">
                                 <span class="icon">📊</span>
@@ -719,26 +596,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="labelTemplate">Estilo das Etiquetas:</label>
-                        <select id="labelTemplate" class="form-select">
-                            <option value="simple">📄 Simples (Padrão)</option>
-                        </select>
-                        <div class="template-info">
-                            <strong>💡 Características:</strong>
-                            <div id="templateDescription">Estilo simples com texto alinhado à esquerda e fontes grandes.</div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
                         <label for="copiesPerLabel">Cópias por Registro:</label>
                         <div class="input-group">
                             <input type="number" id="copiesPerLabel" class="form-input form-input-small" 
-                                   min="1" max="1000" value="1" onchange="updateCopiesInfo()">
-                            <span>cópias por registro</span>
-                        </div>
-                        <div class="copies-info">
-                            <strong>📊 Resumo:</strong>
-                            <div id="copiesSummary">1 registro × 1 cópia = 1 etiqueta total</div>
+                                   min="1" max="100" value="1">
+                            <span style="color: var(--text-light); font-size: 0.9rem;">cópias por registro</span>
                         </div>
                     </div>
 
@@ -767,58 +629,108 @@
     </div>
 
     <!-- Modal de Seleção de Registros -->
-    <div id="recordsModal" class="modal-overlay" style="display: none;">
-        <div class="modal">
+    <div id="recordsModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem;">
+        <div class="modal" style="background: white; padding: 1.5rem; border-radius: 12px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
             <h3>📝 Selecionar Registros</h3>
             <p>Selecione os registros específicos para gerar etiquetas:</p>
             
-            <div class="selection-actions">
-                <button class="btn btn-secondary" onclick="selectAllRecords()">✅ Selecionar Todos</button>
-                <button class="btn btn-secondary" onclick="deselectAllRecords()">❌ Limpar Seleção</button>
-                <button class="btn btn-secondary" onclick="selectFirstRecord()">🔢 Selecionar Primeiro</button>
+            <div style="margin: 1rem 0;">
+                <button class="btn btn-secondary" onclick="selectAllRecords()" style="margin-bottom: 0.5rem; width: 100%;">✅ Selecionar Todos</button>
+                <button class="btn btn-secondary" onclick="deselectAllRecords()" style="width: 100%;">❌ Limpar Seleção</button>
             </div>
 
-            <div class="selection-summary">
-                <strong>📋 Status:</strong> <span id="modalSelectionCount">0</span> de <span id="modalTotalCount">0</span> registros selecionados
+            <div style="max-height: 400px; overflow-y: auto; margin: 1rem 0;">
+                <div id="recordsList">
+                    <!-- Registros serão carregados aqui -->
+                </div>
             </div>
 
-            <div style="max-height: 400px; overflow-y: auto;">
-                <table class="records-table">
-                    <thead>
-                        <tr>
-                            <th class="record-checkbox">
-                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleAllRecords(this.checked)">
-                            </th>
-                            <th>#</th>
-                            <th>Prévia dos Dados</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recordsTableBody">
-                        <!-- Os registros serão preenchidos via JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeRecordsModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="confirmRecordsSelection()">
-                    ✅ Confirmar Seleção
+            <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeRecordsModal()" style="flex: 1;">Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmRecordsSelection()" style="flex: 1;">
+                    ✅ Confirmar
                 </button>
             </div>
         </div>
     </div>
 
- <script>
-    // ✅ CONFIGURAÇÃO DA API
+<script>
+    // ✅ CONFIGURAÇÃO DA API - CORRIGIDA
     function getApiUrl() {
-        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-            return window.location.origin + '/api';
+        // Detecta automaticamente a URL correta
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            if (window.location.port === '5500' || window.location.port === '3000' || window.location.port === '') {
+                return 'http://localhost:3000/api';
+            }
         }
-        return 'http://localhost:3000/api';
+        // Para produção ou outros ambientes
+        return window.location.origin + '/api';
+    }
+    
+    const API_URL = getApiUrl();
+    console.log('🌐 URL da API:', API_URL);
+    
+    // ✅ VARIÁVEIS GLOBAIS
+    let currentSpreadsheet = null;
+    let selectedRecords = [];
+
+    // ✅ FUNÇÃO PARA TESTAR CONEXÃO
+    async function testConnection() {
+        const statusDiv = document.getElementById('systemStatus');
+        
+        try {
+            console.log('🔗 Testando conexão com:', API_URL + '/test');
+            
+            const response = await fetch(API_URL + '/test', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                statusDiv.innerHTML = `
+                    <div style="color: #10b981; margin-bottom: 0.5rem; font-size: 1.2rem;">
+                        ✅ <strong>Conectado ao servidor!</strong>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-light);">
+                        ${result.message}<br>
+                        <small>${new Date().toLocaleTimeString('pt-BR')}</small>
+                    </div>
+                `;
+                console.log('✅ Conexão estabelecida');
+                return true;
+            } else {
+                throw new Error('Resposta inesperada do servidor');
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro na conexão:', error);
+            
+            statusDiv.innerHTML = `
+                <div class="error-message">
+                    ❌ <strong>Servidor offline</strong>
+                    <div style="font-size: 0.85rem; margin-top: 8px; text-align: left;">
+                        <strong>URL testada:</strong> ${API_URL}/test<br>
+                        <strong>Solução:</strong>
+                        <ol style="margin: 8px 0 0 20px;">
+                            <li>Verifique se o backend está rodando</li>
+                            <li>Execute: <code>node server.js</code> na pasta backend</li>
+                            <li>O backend deve rodar na porta 3000</li>
+                        </ol>
+                    </div>
+                </div>
+            `;
+            return false;
+        }
     }
 
-    const API_URL = getApiUrl();
-    
     // ✅ FUNÇÃO PARA MUDAR PÁGINAS
     function showPage(pageId) {
         // Esconder todas as páginas
@@ -837,7 +749,7 @@
         // Ativar tab selecionada
         event.target.classList.add('active');
         
-        // Atualizar conteúdo específico da página
+        // Ações específicas por página
         if (pageId === 'upload') {
             loadSpreadsheets();
         } else if (pageId === 'generate') {
@@ -845,25 +757,43 @@
         }
     }
 
-    // ✅ FUNÇÃO DE UPLOAD
+    // ✅ FUNÇÃO DE UPLOAD SIMPLIFICADA
     async function uploadFile() {
         const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
         const statusDiv = document.getElementById('uploadStatus');
         
         if (!fileInput.files[0]) {
-            statusDiv.innerHTML = '<div class="error-message">❌ Selecione um arquivo primeiro</div>';
+            showMessage('error', '❌ Selecione um arquivo Excel primeiro', 'uploadStatus');
             return;
         }
 
         const file = fileInput.files[0];
         
+        // Validar tipo de arquivo
+        if (!file.name.match(/\.(xlsx|xls)$/i)) {
+            showMessage('error', '❌ Apenas arquivos Excel (.xlsx, .xls) são permitidos', 'uploadStatus');
+            return;
+        }
+        
+        // Validar tamanho (50MB máximo)
+        if (file.size > 50 * 1024 * 1024) {
+            showMessage('error', '❌ Arquivo muito grande (máximo: 50MB)', 'uploadStatus');
+            return;
+        }
+        
         try {
-            statusDiv.innerHTML = '<div style="color: #0369a1; padding: 12px; background: #f0f9ff; border-radius: 8px;">⏳ Enviando arquivo...</div>';
+            // Mostrar estado de carregamento
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<span class="loading"></span> Enviando...';
+            statusDiv.innerHTML = '<div class="info-message">⏳ Enviando arquivo, aguarde...</div>';
             
             const formData = new FormData();
             formData.append('spreadsheet', file);
 
-            const response = await fetch('/api/upload', {
+            console.log('📤 Enviando arquivo:', file.name, `(${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+            
+            const response = await fetch(API_URL + '/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -871,15 +801,34 @@
             const result = await response.json();
 
             if (result.success) {
-                statusDiv.innerHTML = `<div class="success-message">✅ ${result.message}</div>`;
+                let message = `✅ ${result.message}`;
+                if (result.details) {
+                    message += `<br><small>${result.details.rows} linhas, ${result.details.columns} colunas</small>`;
+                    if (result.details.multiLineCells > 0) {
+                        message += `<br><span class="badge badge-multi-line">🔤 ${result.details.multiLineCells} células com múltiplas linhas</span>`;
+                    }
+                }
+                
+                showMessage('success', message, 'uploadStatus');
                 fileInput.value = '';
-                loadSpreadsheets(); // Atualizar lista
+                
+                // Recarregar listas
+                loadSpreadsheets();
+                loadSpreadsheetsForGenerate();
+                
+                // Ir para a página de gerar etiquetas
+                showPage('generate');
             } else {
-                statusDiv.innerHTML = `<div class="error-message">❌ ${result.message}</div>`;
+                showMessage('error', `❌ ${result.message}`, 'uploadStatus');
             }
+            
         } catch (error) {
             console.error('Erro no upload:', error);
-            statusDiv.innerHTML = '<div class="error-message">❌ Erro ao fazer upload</div>';
+            showMessage('error', '❌ Erro ao fazer upload. Verifique a conexão com o servidor.', 'uploadStatus');
+        } finally {
+            // Restaurar botão
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '📤 Fazer Upload';
         }
     }
 
@@ -888,7 +837,14 @@
         const container = document.getElementById('spreadsheetsList');
         
         try {
-            const response = await fetch('/api/spreadsheets');
+            container.innerHTML = '<div class="empty-state"><span class="loading"></span><p>Carregando...</p></div>';
+            
+            const response = await fetch(API_URL + '/spreadsheets');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
             const result = await response.json();
 
             if (result.success && result.spreadsheets.length > 0) {
@@ -897,11 +853,14 @@
                         <div class="spreadsheet-info">
                             <div class="spreadsheet-name">${sheet.fileName}</div>
                             <div class="spreadsheet-details">
-                                📅 ${new Date(sheet.uploadDate).toLocaleDateString()} | 
-                                📊 ${sheet.records} linhas |
-                                📋 ${sheet.columns.length} colunas
+                                <span>📅 ${sheet.formattedDate || new Date(sheet.uploadDate).toLocaleDateString('pt-BR')}</span>
+                                <span>📊 ${sheet.records} linhas</span>
+                                <span>📋 ${sheet.columns} colunas</span>
                             </div>
                         </div>
+                        <button class="btn btn-danger" onclick="deleteSpreadsheet('${sheet.id}', this)" style="padding: 6px 12px; font-size: 0.8rem;">
+                            🗑️
+                        </button>
                     </div>
                 `).join('');
             } else {
@@ -924,7 +883,14 @@
         const container = document.getElementById('spreadsheetsListGenerate');
         
         try {
-            const response = await fetch('/api/spreadsheets');
+            container.innerHTML = '<div class="empty-state"><span class="loading"></span><p>Carregando...</p></div>';
+            
+            const response = await fetch(API_URL + '/spreadsheets');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
             const result = await response.json();
 
             if (result.success && result.spreadsheets.length > 0) {
@@ -934,9 +900,9 @@
                         <div class="spreadsheet-info">
                             <div class="spreadsheet-name">${sheet.fileName}</div>
                             <div class="spreadsheet-details">
-                                📅 ${new Date(sheet.uploadDate).toLocaleDateString()} | 
-                                📊 ${sheet.records} linhas |
-                                📋 ${sheet.columns.length} colunas
+                                <span>📅 ${sheet.formattedDate || new Date(sheet.uploadDate).toLocaleDateString('pt-BR')}</span>
+                                <span>📊 ${sheet.records} linhas</span>
+                                <span>📋 ${sheet.columns} colunas</span>
                             </div>
                         </div>
                     </div>
@@ -956,36 +922,38 @@
         }
     }
 
-    // ✅ VARIÁVEIS GLOBAIS
-    let currentSpreadsheet = null;
-    let selectedRecords = [];
-
-    // ✅ FUNÇÃO CORRIGIDA PARA SELECIONAR PLANILHA
+    // ✅ FUNÇÃO PARA SELECIONAR PLANILHA
     async function selectSpreadsheet(spreadsheetId, clickedElement) {
         try {
             console.log('📥 Selecionando planilha:', spreadsheetId);
             
+            // Resetar estado
             currentSpreadsheet = null;
             selectedRecords = [];
             
-            const response = await fetch(`/api/spreadsheets/${spreadsheetId}/data`);
+            // Mostrar loading
+            const statusDiv = document.getElementById('loadStatus');
+            statusDiv.innerHTML = '<div class="info-message">⏳ Carregando dados da planilha...</div>';
+            
+            // Carregar dados
+            const response = await fetch(API_URL + `/spreadsheets/${spreadsheetId}/data?limit=100`);
             
             if (!response.ok) {
                 throw new Error(`Erro HTTP: ${response.status}`);
             }
             
             const data = await response.json();
-            console.log('📊 Dados recebidos:', data);
-
+            
             if (data.success) {
                 currentSpreadsheet = {
                     id: spreadsheetId,
                     data: data.data,
                     columns: data.columns,
-                    totalRecords: data.totalRecords
+                    totalRecords: data.totalRecords,
+                    fileName: data.metadata?.fileName || 'Planilha'
                 };
 
-                // Atualizar UI - usar o elemento clicado
+                // Atualizar UI
                 document.querySelectorAll('.spreadsheet-item').forEach(item => {
                     item.classList.remove('selected');
                 });
@@ -994,115 +962,95 @@
                     clickedElement.classList.add('selected');
                 }
 
+                // Mostrar colunas
                 displayColumns(data.columns);
-                updateRecordsSelectionUI();
                 
-                showMessage('success', `✅ Planilha selecionada: ${data.totalRecords} linhas e ${data.columns.length} colunas carregadas`);
+                // Mostrar seção de seleção de registros
+                document.getElementById('recordsSelectionSection').style.display = 'block';
+                
+                showMessage('success', `✅ Planilha selecionada: ${data.totalRecords} linhas carregadas`, 'loadStatus');
                 
             } else {
                 throw new Error(data.message || 'Erro ao carregar dados');
             }
         } catch (error) {
             console.error('❌ Erro ao selecionar planilha:', error);
-            showMessage('error', `❌ Erro ao carregar dados da planilha: ${error.message}`);
+            showMessage('error', `❌ Erro ao carregar dados: ${error.message}`, 'loadStatus');
         }
     }
 
-    // ✅ FUNÇÃO CORRIGIDA PARA EXIBIR COLUNAS
+    // ✅ FUNÇÃO PARA EXIBIR COLUNAS
     function displayColumns(columns) {
         const container = document.getElementById('columnsContainer');
-        
-        console.log('📋 Colunas recebidas:', columns);
         
         if (!columns || columns.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <span class="icon">📊</span>
                     <p>Nenhuma coluna encontrada na planilha</p>
-                    <p>Verifique se a planilha tem cabeçalhos na primeira linha</p>
                 </div>
             `;
             return;
         }
         
-        // Ordenar colunas por nome para melhor visualização
-        const sortedColumns = columns.sort((a, b) => a.name.localeCompare(b.name));
-        
-        container.innerHTML = sortedColumns.map(col => `
-            <div class="column-item">
-                <label>
+        container.innerHTML = columns.map(col => `
+            <div class="column-item ${col.hasMultipleLines ? 'has-multi-line' : ''}">
+                <div class="column-header">
                     <input type="checkbox" value="${col.key}" checked 
                            onchange="updatePreview()">
-                    <span style="font-weight: 500;">${col.name}</span>
-                    <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 4px;">
-                        Chave: ${col.key}
-                    </div>
-                </label>
+                    <span style="flex: 1; font-weight: 500;">${col.name}</span>
+                    ${col.hasMultipleLines ? '<span class="badge badge-multi-line">🔤</span>' : ''}
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-light);">
+                    Chave: ${col.key}
+                </div>
             </div>
         `).join('');
-
-        // Mostrar seção de seleção de registros
-        document.getElementById('recordsSelectionSection').style.display = 'block';
         
-        // Atualizar preview automaticamente
+        updatePreview();
+    }
+
+    // ✅ FUNÇÕES DE SELEÇÃO DE COLUNAS
+    function selectAllColumns() {
+        document.querySelectorAll('#columnsContainer input[type="checkbox"]').forEach(cb => {
+            cb.checked = true;
+        });
+        updatePreview();
+    }
+
+    function deselectAllColumns() {
+        document.querySelectorAll('#columnsContainer input[type="checkbox"]').forEach(cb => {
+            cb.checked = false;
+        });
         updatePreview();
     }
 
     // ✅ FUNÇÃO PARA MOSTRAR MENSAGENS
-    function showMessage(type, message) {
-        const statusDiv = document.getElementById('loadStatus');
-        if (type === 'success') {
-            statusDiv.innerHTML = `<div class="success-message">${message}</div>`;
-        } else {
-            statusDiv.innerHTML = `<div class="error-message">${message}</div>`;
+    function showMessage(type, message, elementId) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        const className = type === 'success' ? 'success-message' : 
+                         type === 'error' ? 'error-message' : 'info-message';
+        
+        element.innerHTML = `<div class="${className}">${message}</div>`;
+        
+        // Remover mensagem após 5 segundos (exceto info)
+        if (type !== 'info') {
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, 5000);
         }
-        
-        setTimeout(() => {
-            statusDiv.innerHTML = '';
-        }, 5000);
     }
 
-    // ✅ FUNÇÃO PARA ATUALIZAR SELEÇÃO DE LINHAS
-    function updateRecordsSelectionUI() {
-        if (!currentSpreadsheet) return;
-        
-        const infoElement = document.getElementById('recordsSelectionInfo');
-        const summaryElement = document.getElementById('recordsSelectionSummary');
-        
-        if (selectedRecords.length === 0) {
-            infoElement.innerHTML = `<strong>📋 Status:</strong> Todas as ${currentSpreadsheet.totalRecords} linhas serão usadas`;
-            summaryElement.style.display = 'none';
-        } else {
-            infoElement.innerHTML = `<strong>📋 Status:</strong> ${selectedRecords.length} linhas selecionadas`;
-            document.getElementById('selectedCount').textContent = selectedRecords.length;
-            summaryElement.style.display = 'block';
-        }
-        
-        updateCopiesInfo();
-    }
-
-    // ✅ FUNÇÃO PARA ATUALIZAR INFO DE CÓPIAS
-    function updateCopiesInfo() {
-        if (!currentSpreadsheet) return;
-        
-        const copies = parseInt(document.getElementById('copiesPerLabel').value) || 1;
-        const totalRecords = selectedRecords.length > 0 ? selectedRecords.length : currentSpreadsheet.totalRecords;
-        const totalLabels = totalRecords * copies;
-        
-        document.getElementById('copiesSummary').textContent = 
-            `${totalRecords} linhas × ${copies} cópias = ${totalLabels} etiquetas totais`;
-    }
-
-    // ✅ FUNÇÕES DO MODAL DE SELEÇÃO DE LINHAS
+    // ✅ MODAL DE SELEÇÃO DE REGISTROS
     function openRecordsModal() {
         if (!currentSpreadsheet) {
             showMessage('error', 'Selecione uma planilha primeiro');
             return;
         }
 
-        const modal = document.getElementById('recordsModal');
-        modal.style.display = 'flex';
-        
+        document.getElementById('recordsModal').style.display = 'flex';
         loadRecordsIntoModal();
     }
 
@@ -1113,29 +1061,26 @@
     function loadRecordsIntoModal() {
         if (!currentSpreadsheet) return;
         
-        const tbody = document.getElementById('recordsTableBody');
-        const totalCount = document.getElementById('modalTotalCount');
-        const selectionCount = document.getElementById('modalSelectionCount');
+        const container = document.getElementById('recordsList');
+        const recordsToShow = currentSpreadsheet.data.slice(0, 50); // Limitar a 50 registros
         
-        totalCount.textContent = currentSpreadsheet.totalRecords;
-        selectionCount.textContent = selectedRecords.length;
-        
-        tbody.innerHTML = currentSpreadsheet.data.map((record, index) => `
-            <tr>
-                <td class="record-checkbox">
-                    <input type="checkbox" value="${index}" 
-                           ${selectedRecords.includes(index) ? 'checked' : ''}
-                           onchange="updateRecordSelection(${index}, this.checked)">
-                </td>
-                <td>${index + 1}</td>
-                <td class="record-preview" title="${record.preview}">${record.preview}</td>
-            </tr>
+        container.innerHTML = recordsToShow.map((record, index) => `
+            <div style="padding: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" value="${index}" 
+                       ${selectedRecords.includes(index) ? 'checked' : ''}
+                       onchange="toggleRecordSelection(${index}, this.checked)"
+                       style="width: 18px; height: 18px;">
+                <div>
+                    <div style="font-weight: 500;">Registro ${index + 1}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-light); max-width: 400px; overflow: hidden; text-overflow: ellipsis;">
+                        ${record.preview || 'Sem prévia disponível'}
+                    </div>
+                </div>
+            </div>
         `).join('');
-        
-        updateSelectAllCheckbox();
     }
 
-    function updateRecordSelection(index, isSelected) {
+    function toggleRecordSelection(index, isSelected) {
         if (isSelected) {
             if (!selectedRecords.includes(index)) {
                 selectedRecords.push(index);
@@ -1143,63 +1088,40 @@
         } else {
             selectedRecords = selectedRecords.filter(i => i !== index);
         }
-        
-        document.getElementById('modalSelectionCount').textContent = selectedRecords.length;
-        updateSelectAllCheckbox();
-    }
-
-    function toggleAllRecords(selectAll) {
-        if (selectAll) {
-            selectedRecords = currentSpreadsheet.data.map((_, index) => index);
-        } else {
-            selectedRecords = [];
-        }
-        
-        // Atualizar checkboxes
-        document.querySelectorAll('#recordsTableBody input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = selectAll;
-        });
-        
-        document.getElementById('modalSelectionCount').textContent = selectedRecords.length;
-        updateSelectAllCheckbox();
-    }
-
-    function updateSelectAllCheckbox() {
-        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-        const totalRecords = currentSpreadsheet?.totalRecords || 0;
-        
-        if (selectedRecords.length === totalRecords) {
-            selectAllCheckbox.checked = true;
-            selectAllCheckbox.indeterminate = false;
-        } else if (selectedRecords.length > 0) {
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.indeterminate = true;
-        } else {
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.indeterminate = false;
-        }
     }
 
     function selectAllRecords() {
-        toggleAllRecords(true);
+        if (!currentSpreadsheet) return;
+        selectedRecords = currentSpreadsheet.data.map((_, index) => index);
+        loadRecordsIntoModal();
     }
 
     function deselectAllRecords() {
-        toggleAllRecords(false);
-    }
-
-    function selectFirstRecord() {
-        selectedRecords = [0];
+        selectedRecords = [];
         loadRecordsIntoModal();
     }
 
     function confirmRecordsSelection() {
-        updateRecordsSelectionUI();
+        updateRecordsSelectionInfo();
         closeRecordsModal();
         updatePreview();
     }
 
-    // ✅ FUNÇÃO MELHORADA PARA PREVIEW
+    function updateRecordsSelectionInfo() {
+        const infoElement = document.getElementById('recordsSelectionInfo');
+        
+        if (selectedRecords.length === 0) {
+            infoElement.innerHTML = '<p style="color: var(--text-light); font-size: 0.9rem; margin-top: 0.5rem;">Todos os registros serão usados</p>';
+        } else {
+            infoElement.innerHTML = `
+                <p style="color: var(--text); font-size: 0.9rem; margin-top: 0.5rem;">
+                    ✅ ${selectedRecords.length} registro(s) selecionado(s)
+                </p>
+            `;
+        }
+    }
+
+    // ✅ FUNÇÃO DE PREVIEW
     function updatePreview() {
         const previewArea = document.getElementById('previewArea');
         
@@ -1227,15 +1149,11 @@
             return;
         }
 
-        // Criar preview com dados reais do primeiro registro
+        // Usar primeiro registro para preview
         const firstRecord = currentSpreadsheet.data[0];
-        const selectedColumnNames = selectedColumns.map(colKey => {
-            const column = currentSpreadsheet.columns.find(c => c.key === colKey);
-            return column ? column.name : colKey;
-        });
-
+        
         previewArea.innerHTML = `
-            <div style="text-align: left;">
+            <div style="text-align: left; width: 100%;">
                 <h3 style="margin-bottom: 1rem; color: var(--primary);">📋 Preview da Primeira Etiqueta</h3>
                 <div class="label-preview">
                     <strong style="color: var(--primary);">ETIQUETA 1/${currentSpreadsheet.totalRecords}</strong>
@@ -1261,13 +1179,13 @@
     }
 
     function previewLabels() {
-        updatePreview(); // Reutiliza a mesma função de preview
+        updatePreview();
     }
 
-    // ✅ FUNÇÃO CORRIGIDA PARA GERAR ETIQUETAS
+    // ✅ FUNÇÃO PRINCIPAL: GERAR ETIQUETAS
     async function generateLabels() {
         if (!currentSpreadsheet) {
-            showMessage('error', 'Selecione uma planilha primeiro');
+            showMessage('error', 'Selecione uma planilha primeiro', 'loadStatus');
             return;
         }
 
@@ -1275,23 +1193,21 @@
             .map(cb => cb.value);
             
         if (selectedColumns.length === 0) {
-            showMessage('error', 'Selecione pelo menos uma coluna');
+            showMessage('error', 'Selecione pelo menos uma coluna', 'loadStatus');
             return;
         }
 
         const generateBtn = document.getElementById('generateBtn');
-        const template = document.getElementById('labelTemplate').value;
         const copies = parseInt(document.getElementById('copiesPerLabel').value) || 1;
         
         try {
             // Mostrar loading
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '⏳ Gerando PDF...';
+            generateBtn.innerHTML = '<span class="loading"></span> Gerando PDF...';
             
             // Construir URL para download do PDF
             const params = new URLSearchParams({
                 columns: selectedColumns.join(','),
-                template: template,
                 copies: copies
             });
             
@@ -1299,7 +1215,7 @@
                 params.append('rows', selectedRecords.join(','));
             }
 
-            const pdfUrl = `/api/generate-pdf/${currentSpreadsheet.id}?${params}`;
+            const pdfUrl = API_URL + `/generate-pdf/${currentSpreadsheet.id}?${params}`;
             console.log('📄 Gerando PDF:', pdfUrl);
             
             // Criar link para download
@@ -1313,11 +1229,11 @@
             link.click();
             document.body.removeChild(link);
             
-            showMessage('success', '✅ PDF gerado com sucesso! Verifique sua barra de downloads.');
+            showMessage('success', '✅ PDF gerado com sucesso! Verifique sua barra de downloads.', 'loadStatus');
             
         } catch (error) {
             console.error('❌ Erro ao gerar PDF:', error);
-            showMessage('error', `❌ Erro ao gerar PDF: ${error.message}`);
+            showMessage('error', `❌ Erro ao gerar PDF: ${error.message}`, 'loadStatus');
         } finally {
             // Restaurar botão
             generateBtn.disabled = false;
@@ -1325,25 +1241,98 @@
         }
     }
 
-    // ✅ FUNÇÃO PARA TESTAR CONEXÃO
-    async function testConnection() {
+    // ✅ FUNÇÃO PARA EXCLUIR PLANILHA
+    async function deleteSpreadsheet(spreadsheetId, button) {
+        if (!confirm('Tem certeza que deseja excluir esta planilha?')) return;
+        
+        button.disabled = true;
+        button.innerHTML = '<span class="loading"></span>';
+        
         try {
-            const response = await fetch('/api/test');
+            const response = await fetch(API_URL + `/spreadsheets/${spreadsheetId}`, {
+                method: 'DELETE'
+            });
+            
             const result = await response.json();
-            console.log('✅ Backend conectado:', result);
+            
+            if (result.success) {
+                showMessage('success', '✅ Planilha excluída com sucesso', 'uploadStatus');
+                
+                // Recarregar listas
+                loadSpreadsheets();
+                loadSpreadsheetsForGenerate();
+                
+                // Se a planilha excluída era a atual, limpar interface
+                if (currentSpreadsheet && currentSpreadsheet.id === spreadsheetId) {
+                    currentSpreadsheet = null;
+                    selectedRecords = [];
+                    document.getElementById('columnsContainer').innerHTML = `
+                        <div class="empty-state">
+                            <span class="icon">📊</span>
+                            <p>Selecione uma planilha primeiro</p>
+                        </div>
+                    `;
+                    document.getElementById('recordsSelectionSection').style.display = 'none';
+                    document.getElementById('previewArea').innerHTML = `
+                        <div class="preview-placeholder">
+                            <div class="icon">👁️</div>
+                            <p>Selecione uma planilha primeiro</p>
+                        </div>
+                    `;
+                }
+            } else {
+                showMessage('error', `❌ ${result.message}`, 'uploadStatus');
+            }
         } catch (error) {
-            console.error('❌ Erro na conexão:', error);
+            console.error('Erro ao excluir planilha:', error);
+            showMessage('error', '❌ Erro ao excluir planilha', 'uploadStatus');
         }
     }
 
     // ✅ INICIALIZAÇÃO
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('🚀 Sistema carregado');
+        console.log('🚀 Sistema de Etiquetas inicializado');
+        console.log('🌐 URL da API:', API_URL);
+        
+        // Testar conexão imediatamente
         testConnection();
+        
+        // Carregar dados iniciais
         loadSpreadsheets();
+        loadSpreadsheetsForGenerate();
+        
+        // Verificar conexão periodicamente (a cada 30 segundos)
+        setInterval(testConnection, 30000);
+        
+        // Configurar drag and drop básico
+        setupDragAndDrop();
     });
+
+    // ✅ CONFIGURAÇÃO SIMPLES DE DRAG & DROP
+    function setupDragAndDrop() {
+        const dropArea = document.getElementById('fileInput');
+        if (!dropArea) return;
+        
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = 'var(--primary)';
+        });
+        
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = 'var(--border)';
+        });
+        
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = 'var(--border)';
+            
+            if (e.dataTransfer.files.length) {
+                dropArea.files = e.dataTransfer.files;
+                uploadFile();
+            }
+        });
+    }
 </script>
 
 </body>
-
 </html>
