@@ -2,467 +2,609 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload de Planilhas - Sistema de Etiquetas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Upload de Planilha</title>
     <style>
-        /* RESET MOBILE */
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-        }
-        
-        :root {
-            --primary: #6366f1; 
-            --primary-dark: #4f46e5; 
-            --secondary: #f8fafc;
-            --accent: #06d6a0; 
-            --text: #1e293b; 
-            --text-light: #64748b;
-            --border: #e2e8f0; 
-            --shadow: 0 4px 12px rgba(0,0,0,0.1);
-            --danger: #ef4444;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh; 
-            color: var(--text); 
-            line-height: 1.5;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .container {
-            background: white;
-            min-height: 100vh;
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-        
-        /* HEADER MOBILE */
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white; 
-            padding: 1rem;
-        }
-        
-        .header h1 {
-            font-size: 1.4rem;
-            font-weight: 700; 
-            margin-bottom: 1rem;
-        }
-        
-        /* TABS MOBILE */
-        .tabs {
-            display: flex;
-            background: rgba(255,255,255,0.15);
-            border-radius: 10px; 
-            padding: 3px;
-            gap: 2px;
-        }
-        
-        .tab {
-            padding: 10px 12px;
-            color: white; 
-            text-decoration: none;
-            background: transparent; 
-            border: none; 
-            border-radius: 8px;
-            cursor: pointer; 
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            flex: 1;
-            text-align: center;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .tab.active {
-            background: white; 
-            color: var(--primary);
-        }
-        
-        /* MAIN CONTENT MOBILE */
-        .main-content { 
-            padding: 1rem;
-            background: var(--secondary); 
-            min-height: calc(100vh - 140px);
-        }
-        
-        .upload-card, .files-card {
-            background: white; 
-            padding: 1.5rem 1rem;
-            border-radius: 12px;
-            box-shadow: var(--shadow); 
-            margin-bottom: 1rem; 
-            border: 1px solid var(--border);
-        }
-        
-        .upload-card h2, .files-card h2 {
-            color: var(--text); 
-            margin-bottom: 1rem; 
-            font-size: 1.3rem;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #f0f0f0; 
+            padding: 20px; 
             display: flex; 
+            justify-content: center; 
             align-items: center; 
-            gap: 8px;
+            min-height: 100vh; 
         }
-        
-        /* UPLOAD AREA MOBILE */
-        .upload-area {
-            border: 2px dashed var(--border); 
-            border-radius: 12px;
-            padding: 2rem 1rem;
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+            max-width: 500px; 
+            width: 100%; 
+        }
+        h1 { 
+            color: #4f46e5; 
+            margin-bottom: 20px; 
             text-align: center; 
-            transition: all 0.3s ease;
-            background: var(--secondary); 
-            margin-bottom: 1rem;
         }
         
-        .upload-area.dragover {
-            border-color: var(--primary); 
-            background: #f0f9ff;
-        }
-        
-        .upload-icon {
-            font-size: 2.5rem; 
-            margin-bottom: 1rem; 
-            display: block;
-        }
-        
-        .upload-text {
-            color: var(--text-light); 
-            margin-bottom: 1rem;
-            font-size: 0.95rem;
-        }
-        
-        .file-input {
-            display: none;
-        }
-        
-        /* BOTÕES MOBILE */
-        .btn {
-            padding: 14px 20px; 
-            border: none; 
-            border-radius: 10px;
-            font-size: 1rem; 
-            font-weight: 600; 
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            min-height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-        
-        /* MENSAGENS */
-        .success-message {
-            background: #d1fae5; 
-            color: #065f46; 
-            padding: 12px;
-            border-radius: 8px; 
-            margin-top: 1rem; 
-            text-align: center;
-            font-size: 0.9rem;
-        }
-        
-        .error-message {
-            background: #fee2e2; 
-            color: #991b1b; 
-            padding: 12px;
-            border-radius: 8px; 
-            margin-top: 1rem; 
-            text-align: center;
-            font-size: 0.9rem;
-        }
-        
-        /* LISTA DE ARQUIVOS MOBILE */
-        .file-list {
-            margin-top: 1rem;
-        }
-        
-        .file-item {
-            display: flex; 
-            flex-direction: column;
-            gap: 0.75rem;
-            padding: 1rem; 
-            background: var(--secondary); 
+        /* Status da conexão */
+        #status {
+            padding: 15px;
+            margin: 15px 0;
             border-radius: 8px;
-            margin-bottom: 0.75rem; 
-            border: 1px solid var(--border);
+            text-align: center;
+            border: 2px solid #ddd;
+            background: #f8fafc;
         }
+        #status.online { background: #d1fae5; border-color: #10b981; color: #065f46; }
+        #status.offline { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+        #status.loading { background: #dbeafe; border-color: #3b82f6; color: #1e40af; }
         
-        .file-info {
-            flex: 1;
-        }
-        
-        .file-name {
-            font-weight: 600; 
-            color: var(--text);
-            font-size: 0.95rem;
-            word-break: break-word;
-        }
-        
-        .file-details {
-            font-size: 0.8rem; 
-            color: var(--text-light);
-            margin-top: 4px;
-        }
-        
-        .file-actions {
-            display: flex; 
-            gap: 8px;
-        }
-        
-        .delete-button {
-            background: var(--danger); 
-            color: white; 
-            border: none;
-            padding: 10px 16px; 
-            border-radius: 8px; 
+        .upload-area {
+            border: 3px dashed #4f46e5;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            margin: 20px 0;
             cursor: pointer;
-            font-size: 0.85rem;
-            flex: 1;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            background: #f0f4ff;
+        }
+        .btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+        .btn:hover:not(:disabled) {
+            background: #4338ca;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .mensagem {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
             text-align: center;
         }
-        
-        .refresh-button {
-            background: var(--accent); 
-            color: white; 
-            border: none;
-            padding: 10px 16px; 
-            border-radius: 8px; 
-            cursor: pointer;
-            font-size: 0.85rem;
+        .sucesso { background: #d1fae5; color: #065f46; }
+        .erro { background: #fee2e2; color: #991b1b; }
+        .info { background: #dbeafe; color: #1e40af; }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4f46e5;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .navigation {
             display: flex;
-            align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .nav-link {
+            color: #4f46e5;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .nav-link:hover {
+            background: #f0f4ff;
         }
         
-        .empty-state {
-            text-align: center; 
-            padding: 2rem 1rem; 
-            color: var(--text-light);
-        }
-        
-        .empty-state .icon { 
-            font-size: 2.5rem; 
-            margin-bottom: 1rem; 
-            display: block; 
-        }
-        
-        /* HEADER COM BOTÃO */
-        .card-header {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        /* TABLET */
-        @media (min-width: 768px) {
-            .header {
-                padding: 1.5rem 2rem;
+        /* ========== RESPONSIVIDADE ========== */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+                align-items: flex-start;
+                min-height: auto;
+                padding-top: 30px;
             }
             
-            .header h1 {
-                font-size: 1.8rem;
+            .container {
+                padding: 20px;
+                max-width: 100%;
             }
             
-            .main-content {
-                padding: 2rem;
-            }
-            
-            .upload-card, .files-card {
-                padding: 2rem;
+            h1 {
+                font-size: 1.5em;
+                margin-bottom: 15px;
             }
             
             .upload-area {
-                padding: 3rem;
+                padding: 30px 15px;
+                margin: 15px 0;
             }
             
-            .file-item {
-                flex-direction: row;
-                align-items: center;
+            .upload-area h3 {
+                font-size: 1.1em;
+                margin-bottom: 8px;
             }
             
-            .file-actions {
-                width: auto;
+            .upload-area p {
+                font-size: 0.9em;
+                margin-bottom: 5px;
             }
             
-            .delete-button {
-                flex: none;
-                width: auto;
-            }
-            
-            .card-header {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
+            .upload-area small {
+                font-size: 0.8em;
             }
             
             .btn {
-                width: auto;
-                min-width: 200px;
+                padding: 14px 20px;
+                font-size: 15px;
+                margin-top: 12px;
+                min-height: 50px;
+            }
+            
+            .mensagem {
+                padding: 12px;
+                font-size: 0.9em;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .nav-link {
+                padding: 12px;
+                text-align: center;
+                font-size: 0.95em;
+            }
+            
+            #status {
+                padding: 12px;
+                font-size: 0.9em;
+            }
+            
+            /* Ajuste para ícones no mobile */
+            .upload-area div[style*="font-size: 48px"] {
+                font-size: 40px !important;
+                margin-bottom: 10px !important;
             }
         }
         
-        /* CELULARES PEQUENOS */
-        @media (max-width: 360px) {
-            .header {
-                padding: 0.75rem;
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+                padding-top: 20px;
             }
             
-            .header h1 {
-                font-size: 1.2rem;
+            .container {
+                padding: 15px;
+                border-radius: 8px;
             }
             
-            .tab {
-                padding: 8px 10px;
-                font-size: 0.8rem;
-            }
-            
-            .upload-card, .files-card {
-                padding: 1rem;
+            h1 {
+                font-size: 1.3em;
             }
             
             .upload-area {
-                padding: 1.5rem 1rem;
+                padding: 25px 10px;
+                border-width: 2px;
+            }
+            
+            .upload-area h3 {
+                font-size: 1em;
+            }
+            
+            .upload-area p {
+                font-size: 0.85em;
+            }
+            
+            .btn {
+                padding: 12px 16px;
+                font-size: 14px;
+                min-height: 46px;
+            }
+            
+            .nav-link {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+            
+            .mensagem {
+                padding: 10px;
+                font-size: 0.85em;
+            }
+        }
+        
+        @media (max-width: 375px) {
+            .upload-area {
+                padding: 20px 10px;
+            }
+            
+            .upload-area div[style*="font-size: 48px"] {
+                font-size: 36px !important;
+            }
+            
+            .btn {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+        }
+        
+        /* Para landscape em mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+            
+            .container {
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+            
+            .upload-area {
+                padding: 20px;
+            }
+        }
+        
+        /* Melhorias para toque */
+        @media (hover: none) and (pointer: coarse) {
+            .upload-area:hover,
+            .nav-link:hover,
+            .btn:hover:not(:disabled) {
+                background: none;
+                transform: none;
+            }
+            
+            .upload-area:active,
+            .nav-link:active,
+            .btn:active:not(:disabled) {
+                transform: scale(0.98);
+                opacity: 0.9;
+            }
+            
+            /* Tamanho mínimo para toque */
+            .upload-area,
+            .btn,
+            .nav-link {
+                min-height: 44px;
+            }
+        }
+        
+        /* Evitar zoom em inputs no iOS */
+        @supports (-webkit-touch-callout: none) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+        
+        /* Ajuste de drag and drop no mobile */
+        @media (pointer: coarse) {
+            .upload-area {
+                border-style: solid;
             }
         }
     </style>
 </head>
 <body>
+    <!-- O HTML CONTINUA EXATAMENTE IGUAL -->
     <div class="container">
-        <header class="header">
-            <h1>📤 Upload de Planilhas</h1>
-            <nav class="tabs">
-                <a href="/" class="tab">Início</a>
-                <a href="/upload" class="tab active">Uploads</a>
-                <a href="/generate" class="tab">Gerar Etiquetas</a>
-            </nav>
-        </header>
-
-        <main class="main-content">
-            <div class="upload-card">
-                <h2>Fazer Upload de Planilha</h2>
-                
-                <div class="upload-area" id="uploadArea">
-                    <span class="upload-icon">📄</span>
-                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">Arraste sua planilha aqui</h3>
-                    <p class="upload-text">ou clique para selecionar um arquivo</p>
-                    <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 1rem;">
-                        Formatos: .xlsx, .xls (até 10MB)
-                    </p>
-                    <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
-                    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
-                        📁 Selecionar Arquivo
-                    </button>
-                </div>
-
-                <div id="uploadStatus"></div>
-            </div>
-
-            <div class="files-card">
-                <div class="card-header">
-                    <h2>Planilhas Carregadas</h2>
-                    <button class="refresh-button" onclick="loadSpreadsheets()">
-                        🔄 Atualizar
-                    </button>
-                </div>
-                
-                <div id="filesList">
-                    <div class="empty-state">
-                        <span class="icon">📊</span>
-                        <p>Nenhuma planilha carregada</p>
-                        <p style="font-size: 0.85rem; margin-top: 0.5rem;">Faça upload de uma planilha para começar</p>
-                    </div>
-                </div>
-            </div>
-        </main>
+        <h1>📤 Upload de Planilha</h1>
+        
+        <!-- Status da conexão -->
+        <div id="status" class="loading">
+            <span class="spinner"></span> Verificando conexão...
+        </div>
+        
+        <!-- Mensagens do sistema -->
+        <div id="mensagens"></div>
+        
+        <!-- Área de upload -->
+        <div class="upload-area" onclick="document.getElementById('arquivo').click()">
+            <div style="font-size: 48px; margin-bottom: 10px;">📄</div>
+            <h3>Clique para selecionar uma planilha</h3>
+            <p>Formatos: .xlsx, .xls</p>
+            <small>Tamanho máximo: 10MB</small>
+        </div>
+        
+        <!-- Input de arquivo -->
+        <input type="file" id="arquivo" accept=".xlsx,.xls" style="display: none;">
+        
+        <!-- Botão de envio -->
+        <button class="btn" id="uploadBtn" onclick="enviarArquivo()" disabled>
+            📤 Enviar Planilha
+        </button>
+        
+        <!-- Navegação -->
+        <div class="navigation">
+            <a href="/" class="nav-link">🏠 Início</a>
+            <a href="/upload" class="nav-link">📤 Upload</a>
+            <a href="/generate" class="nav-link">🏷️ Gerar Etiquetas</a>
+        </div>
     </div>
 
-   <script>
-    // ✅ CONFIGURAÇÃO INTELIGENTE DA API URL
-    function getApiUrl() {
-        // Se estiver no localhost, usa localhost, senão usa a URL atual
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            return 'http://localhost:3000/api';
-        } else {
-            return window.location.origin + '/api';
-        }
-    }
-
-    const API_URL = getApiUrl();
-    
-    console.log('🌐 API URL configurada:', API_URL);
-    console.log('📍 URL atual:', window.location.href);
-
-    // Testar conexão com a API
-    async function testConnection() {
-        try {
-            console.log('🔗 Testando conexão com API...');
-            const response = await fetch(API_URL + '/test');
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            console.log('✅ Conexão com API OK:', data);
-            
-            // Mostrar status na página se houver elemento
-            const statusElement = document.getElementById('statusInfo');
-            if (statusElement) {
-                statusElement.innerHTML = `<div style="background: #d1fae5; color: #065f46; padding: 10px; border-radius: 6px; margin: 10px 0;">
-                    <strong>✅ Conectado</strong> - Backend funcionando: ${data.environment}
-                </div>`;
-            }
-            
-        } catch (error) {
-            console.error('❌ Erro na conexão com API:', error);
-            
-            // Mostrar erro na página se houver elemento
-            const statusElement = document.getElementById('statusInfo');
-            if (statusElement) {
-                statusElement.innerHTML = `<div style="background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 6px; margin: 10px 0;">
-                    <strong>❌ Erro de conexão</strong> - Não foi possível conectar ao servidor. Detalhes no console.
-                </div>`;
-            }
-            
-            // Tentar URL alternativa se a principal falhar
-            if (API_URL.includes('localhost')) {
-                console.log('🔄 Tentando URL alternativa...');
-                const alternativeUrl = window.location.origin + '/api';
-                if (alternativeUrl !== API_URL) {
-                    console.log('🔄 Testando:', alternativeUrl);
-                    // Você pode implementar uma segunda tentativa aqui se necessário
-                }
-            }
-        }
-    }
-
-    // Carregar quando a página carregar
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('🚀 Página carregada');
-        console.log('📍 Hostname:', window.location.hostname);
+    <script>
+        // O JAVASCRIPT CONTINUA EXATAMENTE IGUAL
+        // ========== CONFIGURAÇÕES ==========
+        // URL da API - se estiver na mesma origem, usa relativa
+        const API_URL = window.location.origin + '/api';
         console.log('🔗 API URL:', API_URL);
         
-        testConnection();
-    });
-</script>
+        let conexaoAtiva = false;
+        let arquivoSelecionado = null;
+        
+        // ========== FUNÇÕES PRINCIPAIS ==========
+        
+        // Testar conexão de forma segura
+        async function testarConexao() {
+            console.log('📡 Testando conexão com:', API_URL + '/ping');
+            
+            const statusDiv = document.getElementById('status');
+            if (!statusDiv) {
+                console.error('❌ Elemento #status não encontrado');
+                return false;
+            }
+            
+            try {
+                statusDiv.className = 'loading';
+                statusDiv.innerHTML = '<span class="spinner"></span> Conectando...';
+                
+                // Testar com timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const resposta = await fetch(API_URL + '/ping', {
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                // Tentar como JSON
+                try {
+                    const dados = await resposta.json();
+                    console.log('✅ Conexão OK:', dados);
+                    
+                    statusDiv.className = 'online';
+                    statusDiv.innerHTML = `
+                        ✅ <strong>Backend Conectado!</strong><br>
+                        <small>Servidor: ${dados.server || 'Etiquetas API'}</small>
+                    `;
+                    
+                    conexaoAtiva = true;
+                    mostrarMensagem('sucesso', 'Sistema pronto para uso!');
+                    return true;
+                    
+                } catch (jsonError) {
+                    // Se não for JSON, verificar se pelo menos responde
+                    if (resposta.ok) {
+                        statusDiv.className = 'online';
+                        statusDiv.innerHTML = '✅ Backend respondendo (mas não em JSON)';
+                        conexaoAtiva = true;
+                        return true;
+                    }
+                    throw new Error('Resposta não é JSON');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro de conexão:', error);
+                
+                statusDiv.className = 'offline';
+                statusDiv.innerHTML = `
+                    ❌ <strong>Backend Offline</strong><br>
+                    <small>${error.message}</small>
+                `;
+                
+                conexaoAtiva = false;
+                mostrarMensagem('erro', 'Não foi possível conectar ao servidor');
+                return false;
+            }
+        }
+        
+        // Quando selecionar arquivo
+        document.getElementById('arquivo').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            arquivoSelecionado = file;
+            
+            // Validar arquivo
+            if (!validarArquivo(file)) {
+                arquivoSelecionado = null;
+                document.getElementById('uploadBtn').disabled = true;
+                return;
+            }
+            
+            // Atualizar visual
+            const uploadArea = document.querySelector('.upload-area');
+            const tamanhoMB = (file.size / (1024 * 1024)).toFixed(2);
+            
+            uploadArea.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 10px; color: #10b981;">📄</div>
+                <h3>${file.name}</h3>
+                <p>${tamanhoMB} MB • Pronto para enviar</p>
+                <small>Clique para selecionar outro arquivo</small>
+            `;
+            
+            // Habilitar botão
+            document.getElementById('uploadBtn').disabled = false;
+            
+            mostrarMensagem('info', `Arquivo "${file.name}" selecionado`);
+        });
+        
+        // Validar arquivo
+        function validarArquivo(file) {
+            // Tipo
+            if (!file.name.match(/\.(xlsx|xls)$/i)) {
+                mostrarMensagem('erro', 'Apenas arquivos Excel (.xlsx, .xls) são permitidos');
+                return false;
+            }
+            
+            // Tamanho (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                mostrarMensagem('erro', 'Arquivo muito grande. Máximo: 10MB');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Enviar arquivo
+        async function enviarArquivo() {
+            if (!conexaoAtiva) {
+                mostrarMensagem('erro', 'Servidor offline. Verifique a conexão.');
+                return;
+            }
+            
+            if (!arquivoSelecionado) {
+                mostrarMensagem('erro', 'Selecione um arquivo primeiro!');
+                return;
+            }
+            
+            console.log('📤 Enviando arquivo:', arquivoSelecionado.name);
+            
+            const btn = document.getElementById('uploadBtn');
+            const btnOriginal = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Enviando...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('spreadsheet', arquivoSelecionado);
+                
+                mostrarMensagem('info', 'Enviando arquivo...');
+                
+                const resposta = await fetch(API_URL + '/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                console.log('📡 Status:', resposta.status);
+                
+                // Tentar parsear como JSON
+                let dados;
+                try {
+                    dados = await resposta.json();
+                } catch (e) {
+                    // Se não for JSON, criar objeto básico
+                    dados = {
+                        sucesso: resposta.ok,
+                        mensagem: resposta.ok ? 'Arquivo enviado' : 'Erro no servidor'
+                    };
+                }
+                
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || dados.error || `Erro ${response.status}`);
+                }
+                
+                if (dados.sucesso || resposta.ok) {
+                    // Sucesso
+                    mostrarMensagem('sucesso', 
+                        `✅ ${dados.mensagem || 'Arquivo enviado com sucesso!'}<br>
+                        <strong>${arquivoSelecionado.name}</strong>`
+                    );
+                    
+                    // Resetar
+                    document.getElementById('arquivo').value = '';
+                    arquivoSelecionado = null;
+                    
+                    document.querySelector('.upload-area').innerHTML = `
+                        <div style="font-size: 48px; margin-bottom: 10px; color: #10b981;">✅</div>
+                        <h3>Upload concluído!</h3>
+                        <p>Clique para enviar outra planilha</p>
+                    `;
+                    
+                    btn.disabled = true;
+                    
+                } else {
+                    mostrarMensagem('erro', dados.erro || dados.error || 'Erro desconhecido');
+                    btn.disabled = false;
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro no upload:', error);
+                mostrarMensagem('erro', `Falha no upload: ${error.message}`);
+                btn.disabled = false;
+                
+            } finally {
+                btn.innerHTML = btnOriginal;
+            }
+        }
+        
+        // Mostrar mensagem
+        function mostrarMensagem(tipo, texto) {
+            const div = document.getElementById('mensagens');
+            const msg = document.createElement('div');
+            msg.className = `mensagem ${tipo}`;
+            msg.innerHTML = texto;
+            
+            // Limpar mensagens anteriores
+            div.innerHTML = '';
+            div.appendChild(msg);
+            
+            // Auto-remover após 5 segundos
+            setTimeout(() => {
+                if (div.contains(msg)) {
+                    div.removeChild(msg);
+                }
+            }, 5000);
+        }
+        
+        // ========== INICIALIZAÇÃO ==========
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Página carregada');
+            
+            // Testar conexão
+            await testarConexao();
+            
+            // Configurar drag and drop simples
+            const uploadArea = document.querySelector('.upload-area');
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.background = '#f0f4ff';
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.background = '';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.background = '';
+                
+                if (e.dataTransfer.files.length) {
+                    const file = e.dataTransfer.files[0];
+                    if (file.name.match(/\.(xlsx|xls)$/i)) {
+                        document.getElementById('arquivo').files = e.dataTransfer.files;
+                        
+                        // Disparar evento change
+                        const event = new Event('change');
+                        document.getElementById('arquivo').dispatchEvent(event);
+                    } else {
+                        mostrarMensagem('erro', 'Apenas arquivos Excel são permitidos');
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>

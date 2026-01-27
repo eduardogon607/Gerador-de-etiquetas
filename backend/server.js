@@ -1,1071 +1,855 @@
-// backend/server.js - SISTEMA DE ETIQUETAS COM QR CODE VISÍVEL
+
+// backend/server.js - QR CODE COM INFORMAÇÕES COMPLETAS
 const express = require('express');
 const multer = require('multer');
-const cors = require('cors');
-const XLSX = require('xlsx');
 const path = require('path');
+const fs = require('fs');
+const xlsx = require('xlsx');
 const PDFDocument = require('pdfkit');
+const cors = require('cors');
 const QRCode = require('qrcode');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3001;
 
-console.log('='.repeat(60));
-console.log('🚀 SISTEMA DE ETIQUETAS - QR CODE GARANTIDO');
-console.log('='.repeat(60));
-console.log(`📍 Porta: ${PORT}`);
-console.log(`📅 Iniciado em: ${new Date().toLocaleString('pt-BR')}`);
-console.log('='.repeat(60));
+// ========== CONFIGURAÇÕES ==========
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// CORS
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Middlewares
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// Servir frontend estático
 const frontendPath = path.join(__dirname, '../frontend');
 app.use(express.static(frontendPath));
 
-// Configuração de upload
+if (!fs.existsSync('uploads')) {
+    fs.mkdirSync('uploads', { recursive: true });
+}
+
+// ========== UPLOAD ==========
 const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { 
-        fileSize: 50 * 1024 * 1024,
-        files: 1
-    },
+    storage: multer.diskStorage({
+        destination: 'uploads/',
+        filename: (req, file, cb) => {
+            const uniqueName = Date.now() + '-' + Math.random().toString(36).substring(7) + path.extname(file.originalname);
+            cb(null, uniqueName);
+        }
+    }),
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['.xlsx', '.xls', '.csv'];
         const ext = path.extname(file.originalname).toLowerCase();
-        
-        if (allowedTypes.includes(ext)) {
+        if (['.xlsx', '.xls'].includes(ext)) {
             cb(null, true);
         } else {
-            cb(new Error('Apenas arquivos Excel (.xlsx, .xls) e CSV são permitidos'), false);
+            cb(new Error('Apenas arquivos Excel (.xlsx, .xls) são permitidos'));
         }
-    }
-}).single('spreadsheet');
+    },
+    limits: { fileSize: 10 * 1024 * 1024 }
+});
 
-// ========== GERENCIADOR DE PLANILHAS ==========
+// ========== DADOS ==========
+let spreadsheets = [];
 
-class SpreadsheetManager {
-    constructor() {
-        this.data = new Map();
-    }
-
-    set(id, spreadsheetData) {
-        this.data.set(id, {
-            ...spreadsheetData,
-            lastAccess: Date.now()
-        });
-    }
-
-    get(id) {
-        const sheet = this.data.get(id);
-        if (sheet) {
-            sheet.lastAccess = Date.now();
-        }
-        return sheet;
-    }
-
-    delete(id) {
-        return this.data.delete(id);
-    }
-
-    getAll() {
-        return Array.from(this.data.entries()).map(([id, data]) => ({
-            id,
-            fileName: data.originalName,
-            uploadDate: data.uploadDate,
-            lastAccess: data.lastAccess,
-            records: data.data ? data.data.length : 0,
-            columns: data.columns ? data.columns.length : 0,
-            formattedDate: new Date(data.uploadDate).toLocaleString('pt-BR'),
-            size: data.fileSize || 'N/A'
-        }));
-    }
-
-    cleanup(maxAgeHours = 24) {
-        const maxAge = maxAgeHours * 60 * 60 * 1000;
-        const now = Date.now();
-        let removed = 0;
+// ========== FUNÇÃO PARA FORÇAR FORMATO BRASILEIRO ==========
+function formatarComoBrasileiro(valor, formatoExcel) {
+    if (!valor && valor !== 0) return '';
+    
+    // Se já é string, verificar se é data
+    if (typeof valor === 'string') {
+        const str = valor.trim();
         
-        for (const [id, sheet] of this.data.entries()) {
-            if (now - sheet.lastAccess > maxAge) {
-                this.delete(id);
-                removed++;
-                console.log(`🗑️ Removida planilha antiga: ${id} (${sheet.originalName})`);
-            }
-        }
+        // Verificar padrão de data (dd/mm/aaaa ou mm/dd/aaaa)
+        const padraoData = /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})(.*)$/;
+        const match = str.match(padraoData);
         
-        return removed;
-    }
-}
-
-const spreadsheetManager = new SpreadsheetManager();
-
-// Limpeza automática a cada hora
-setInterval(() => {
-    const removed = spreadsheetManager.cleanup(24);
-    if (removed > 0) {
-        console.log(`🧹 Limpeza automática: ${removed} planilhas removidas`);
-    }
-}, 60 * 60 * 1000);
-
-// ========== FUNÇÃO PARA FORMATAR VALORES EXATOS ==========
-
-function formatCellValue(cell) {
-    try {
-        if (cell === null || cell === undefined || cell === '') {
-            return '';
-        }
-        
-        // Se for string, retorna como está
-        if (typeof cell === 'string') {
-            return cell.trim();
-        }
-        
-        // Se for número, verificar se é data do Excel
-        if (typeof cell === 'number') {
-            // Excel armazena datas como números (dias desde 01/01/1900)
-            if (cell > 0 && cell < 100000) {
-                try {
-                    // Converter data do Excel
-                    const excelEpoch = new Date(1899, 11, 30);
-                    let excelDate = cell;
-                    
-                    // Ajustar bug do Excel (1900 considerado bissexto)
-                    if (excelDate > 60) excelDate -= 1;
-                    
-                    const date = new Date(excelEpoch.getTime() + (excelDate * 24 * 60 * 60 * 1000));
-                    
-                    if (!isNaN(date.getTime())) {
-                        const day = date.getDate().toString().padStart(2, '0');
-                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                        const year = date.getFullYear();
-                        const hours = date.getHours().toString().padStart(2, '0');
-                        const minutes = date.getMinutes().toString().padStart(2, '0');
-                        const seconds = date.getSeconds().toString().padStart(2, '0');
-                        
-                        // Verificar se tem hora
-                        if (hours === '00' && minutes === '00' && seconds === '00') {
-                            return `${day}/${month}/${year}`;
-                        } else {
-                            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-                        }
-                    }
-                } catch (e) {
-                    // Se falhar, formata como número normal
-                }
+        if (match) {
+            const p1 = parseInt(match[1]);
+            const p2 = parseInt(match[2]);
+            const ano = match[3];
+            const resto = match[4] || '';
+            
+            // Se p1 > 12 e p2 <= 12 → já está dd/mm (BR)
+            if (p1 > 12 && p2 <= 12) {
+                return str;
             }
             
-            // Para outros números, formatar normalmente
-            if (Number.isInteger(cell)) {
-                return cell.toString();
-            } else {
-                return Number(cell.toFixed(6)).toString();
+            // Se p1 <= 12 e p2 > 12 → está invertido (mm/dd)
+            if (p1 <= 12 && p2 > 12) {
+                const dia = p2.toString().padStart(2, '0');
+                const mes = p1.toString().padStart(2, '0');
+                const anoCompleto = ano.length === 2 ? `20${ano}` : ano;
+                return `${dia}/${mes}/${anoCompleto}${resto}`;
+            }
+            
+            // Se ambos <= 12, verificar pelo formato do Excel
+            if (p1 <= 12 && p2 <= 12) {
+                // Se o formato Excel é americano (começa com m), inverter
+                if (formatoExcel && formatoExcel.toLowerCase().startsWith('m')) {
+                    const dia = p2.toString().padStart(2, '0');
+                    const mes = p1.toString().padStart(2, '0');
+                    const anoCompleto = ano.length === 2 ? `20${ano}` : ano;
+                    return `${dia}/${mes}/${anoCompleto}${resto}`;
+                }
             }
         }
         
-        // Se for booleano
-        if (typeof cell === 'boolean') {
-            return cell ? 'VERDADEIRO' : 'FALSO';
+        return str;
+    }
+    
+    // Se for número (serial do Excel)
+    if (typeof valor === 'number') {
+        try {
+            // Converter serial do Excel para data
+            const excelSerial = valor;
+            
+            // Verificar se é data (está no intervalo típico)
+            if (excelSerial > 0 && excelSerial < 50000) {
+                const baseDate = new Date(1899, 11, 30);
+                const date = new Date(baseDate.getTime() + excelSerial * 24 * 60 * 60 * 1000);
+                
+                const dia = String(date.getDate()).padStart(2, '0');
+                const mes = String(date.getMonth() + 1).padStart(2, '0');
+                const ano = date.getFullYear();
+                
+                let resultado = `${dia}/${mes}/${ano}`;
+                
+                // Se tem parte decimal, adicionar hora
+                const parteDecimal = excelSerial - Math.floor(excelSerial);
+                if (parteDecimal > 0) {
+                    const horas = String(date.getHours()).padStart(2, '0');
+                    const minutos = String(date.getMinutes()).padStart(2, '0');
+                    resultado += ` ${horas}:${minutos}`;
+                    
+                    if (date.getSeconds() > 0) {
+                        const segundos = String(date.getSeconds()).padStart(2, '0');
+                        resultado += `:${segundos}`;
+                    }
+                }
+                
+                return resultado;
+            }
+            
+            return valor.toString();
+            
+        } catch (error) {
+            return valor.toString();
         }
-        
-        // Se for data do JavaScript
-        if (cell instanceof Date) {
-            return cell.toLocaleString('pt-BR');
+    }
+    
+    return String(valor);
+}
+
+// ========== FUNÇÃO PARA GERAR TEXTO DO QR CODE ==========
+function gerarTextoQRCode(etiquetaNumero, totalEtiquetas, spreadsheet, rowData, selectedColumns, mode, rowIndex) {
+    // Criar texto formatado para o QR Code
+    let texto = "=".repeat(40) + "\n";
+    texto += "🏷️ ETIQUETA DIGITAL\n";
+    texto += "=".repeat(40) + "\n\n";
+    
+    // Informações gerais
+    texto += "📋 INFORMAÇÕES GERAIS\n";
+    texto += "• Sistema: Gerador de Etiquetas\n";
+    texto += `• Etiqueta: ${etiquetaNumero} de ${totalEtiquetas}\n`;
+    texto += `• Arquivo: ${spreadsheet.fileName}\n`;
+    texto += `• Data de geração: ${new Date().toLocaleDateString('pt-BR')}\n`;
+    texto += `• Hora de geração: ${new Date().toLocaleTimeString('pt-BR')}\n`;
+    
+    if (mode === 'single') {
+        texto += `• Modo: Linha específica (${rowIndex + 1})\n`;
+    } else {
+        texto += "• Modo: Todas as linhas\n";
+    }
+    
+    texto += "\n" + "=".repeat(40) + "\n";
+    texto += "📊 DADOS DA ETIQUETA\n";
+    texto += "=".repeat(40) + "\n\n";
+    
+    // Adicionar todos os dados da linha
+    selectedColumns.forEach(col => {
+        const valor = rowData[col.name];
+        if (valor && valor.toString().trim() !== '') {
+            // Truncar valores muito longos para o QR Code
+            let valorExibicao = valor.toString();
+            if (valorExibicao.length > 50) {
+                valorExibicao = valorExibicao.substring(0, 47) + '...';
+            }
+            
+            texto += `• ${col.name}: ${valorExibicao}\n`;
         }
+    });
+    
+    texto += "\n" + "=".repeat(40) + "\n";
+    texto += "📱 COMO USAR\n";
+    texto += "=".repeat(40) + "\n";
+    texto += "• Escaneie este QR Code para ver\n";
+    texto += "  as informações da etiqueta\n";
+    texto += "• Mantenha para referência futura\n";
+    texto += "• Compartilhe se necessário\n";
+    
+    texto += "\n" + "=".repeat(40) + "\n";
+    texto += "🔗 SISTEMA DE ETIQUETAS\n";
+    texto += `• Gerado em: ${new Date().toISOString()}\n`;
+    texto += "• Sistema 100% funcional\n";
+    texto += "=".repeat(40);
+    
+    return texto;
+}
+
+// ========== FUNÇÃO PARA GERAR QR CODE ==========
+async function gerarQRCodeParaEtiqueta(etiquetaNumero, totalEtiquetas, spreadsheet, rowData, selectedColumns, mode, rowIndex) {
+    try {
+        // Gerar texto formatado
+        const texto = gerarTextoQRCode(etiquetaNumero, totalEtiquetas, spreadsheet, rowData, selectedColumns, mode, rowIndex);
         
-        // Para qualquer outro tipo
-        return String(cell).trim();
+        // Gerar QR Code
+        const qrCodeDataURL = await QRCode.toDataURL(texto, {
+            width: 200,  // Maior para mais dados
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            },
+            errorCorrectionLevel: 'H'  // Alta correção de erro
+        });
+        
+        return qrCodeDataURL;
         
     } catch (error) {
-        console.warn('Erro ao formatar célula:', error);
-        return String(cell || '').trim();
+        console.error('❌ Erro ao gerar QR Code:', error);
+        return null;
     }
 }
 
-// ========== PROCESSAMENTO EXCEL ==========
-
-async function processExcel(buffer, originalName) {
+// ========== FUNÇÃO PARA LER EXCEL ==========
+async function lerExcelCorretamente(filePath) {
+    console.log(`📖 Lendo Excel: ${filePath}`);
+    
     try {
-        console.log('\n📥 PROCESSANDO ARQUIVO EXCEL...');
-        console.log(`📄 Nome: ${originalName}`);
-        console.log(`📏 Tamanho: ${(buffer.length / 1024 / 1024).toFixed(2)} MB`);
+        const workbook = xlsx.readFile(filePath, {
+            cellDates: false,
+            cellNF: true,
+            dateNF: 'dd"/"mm"/"yyyy',
+            raw: false,
+            cellText: true
+        });
         
-        let jsonData = [];
-        let sheetName = 'Planilha';
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
         
-        // Tentar processar como Excel
-        try {
-            const workbook = XLSX.read(buffer, { 
-                type: 'buffer',
-                cellFormula: false,
-                cellHTML: false,
-                cellStyles: false,
-                raw: true,
-                dateNF: 'dd/mm/yyyy'
-            });
-            
-            sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            
-            console.log(`📊 Planilha: ${sheetName}`);
-            
-            jsonData = XLSX.utils.sheet_to_json(worksheet, { 
-                header: 1,
-                defval: '',
-                raw: true
-            });
-            
-        } catch (excelError) {
-            console.log('⚠️ Não é Excel, tentando como CSV...');
-            
-            // Tentar como CSV
-            const text = buffer.toString('utf-8');
-            const lines = text.split('\n').filter(line => line.trim() !== '');
-            
-            jsonData = lines.map(line => {
-                if (line.includes(';')) {
-                    return line.split(';').map(cell => cell.trim());
-                } else if (line.includes(',')) {
-                    return line.split(',').map(cell => cell.trim());
-                } else {
-                    return line.split('\t').map(cell => cell.trim());
-                }
-            });
-        }
+        const range = xlsx.utils.decode_range(worksheet['!ref']);
+        console.log(`📊 Planilha: ${range.e.r + 1} linhas × ${range.e.c + 1} colunas`);
         
-        if (jsonData.length === 0) {
-            throw new Error('Planilha vazia ou formato não suportado!');
-        }
-        
-        console.log(`📊 Total de linhas brutas: ${jsonData.length}`);
-        
-        // ENCONTRAR CABEÇALHOS
-        let headerRowIndex = 0;
-        let maxTextCells = 0;
-        
-        for (let i = 0; i < Math.min(5, jsonData.length); i++) {
-            const row = jsonData[i] || [];
-            let textCells = 0;
-            
-            for (let j = 0; j < row.length; j++) {
-                const cell = row[j];
-                if (cell && cell.toString().trim().length > 0) {
-                    textCells++;
-                }
-            }
-            
-            if (textCells > maxTextCells) {
-                maxTextCells = textCells;
-                headerRowIndex = i;
-            }
-        }
-        
-        console.log(`✅ Cabeçalhos na linha ${headerRowIndex + 1} (${maxTextCells} colunas)`);
-        
-        // EXTRAIR NOMES DAS COLUNAS
-        const headerRow = jsonData[headerRowIndex] || [];
-        const columns = [];
-        
-        for (let i = 0; i < headerRow.length; i++) {
-            let columnName = headerRow[i];
-            
-            if (!columnName || columnName.toString().trim() === '') {
-                columnName = `Coluna ${i + 1}`;
-            } else {
-                columnName = columnName.toString()
-                    .replace(/[\n\r\t]/g, ' ')
-                    .replace(/\s+/g, ' ')
-                    .trim()
-                    .substring(0, 50);
-                
-                if (!columnName) {
-                    columnName = `Coluna ${i + 1}`;
-                }
-            }
-            
-            columns.push({
-                name: columnName,
-                key: `col_${i}`,
-                index: i,
-                originalIndex: i + 1,
-                hasMultipleLines: false
-            });
-        }
-        
-        console.log(`📋 ${columns.length} colunas identificadas`);
-        
-        // PROCESSAR DADOS
+        // Processar célula por célula
         const data = [];
-        let emptyRows = 0;
+        const headers = [];
         
-        for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
-            const row = jsonData[i] || [];
-            const rowData = { 
-                _id: `row_${i + 1}`, 
-                _rowNumber: i + 1,
-                _isEmpty: true
-            };
+        // 1. Ler cabeçalhos
+        for (let col = range.s.c; col <= range.e.c; col++) {
+            const cellAddress = xlsx.utils.encode_cell({ r: range.s.r, c: col });
+            const cell = worksheet[cellAddress];
             
+            let headerName = cell ? (cell.w || String(cell.v || '')) : '';
+            headerName = headerName.trim();
+            
+            if (!headerName) {
+                headerName = `Coluna_${col + 1}`;
+            }
+            
+            headers.push({
+                index: col,
+                name: headerName,
+                format: cell ? cell.z : null
+            });
+        }
+        
+        console.log(`📋 ${headers.length} colunas identificadas`);
+        
+        // 2. Processar dados
+        for (let row = range.s.r + 1; row <= range.e.r; row++) {
+            const rowData = {};
             let hasData = false;
             
-            for (let j = 0; j < columns.length; j++) {
-                const col = columns[j];
-                const value = row[col.index];
+            headers.forEach(header => {
+                const cellAddress = xlsx.utils.encode_cell({ r: row, c: header.index });
+                const cell = worksheet[cellAddress];
                 
-                if (value !== undefined && value !== null && value !== '') {
-                    rowData[col.key] = formatCellValue(value);
-                    hasData = true;
-                    rowData._isEmpty = false;
-                    
-                    if (typeof rowData[col.key] === 'string' && rowData[col.key].includes('\n')) {
-                        col.hasMultipleLines = true;
+                let valorFinal = '';
+                
+                if (cell) {
+                    if (cell.w !== undefined && cell.w !== null) {
+                        valorFinal = formatarComoBrasileiro(cell.w, cell.z);
+                    } else if (cell.v !== undefined) {
+                        valorFinal = formatarComoBrasileiro(cell.v, cell.z);
                     }
-                } else {
-                    rowData[col.key] = '';
                 }
-            }
+                
+                rowData[header.name] = valorFinal;
+                
+                if (valorFinal && valorFinal.trim() !== '') {
+                    hasData = true;
+                }
+            });
             
             if (hasData) {
                 data.push(rowData);
-            } else {
-                emptyRows++;
             }
         }
         
-        console.log(`✅ ${data.length} linhas de dados extraídas`);
-        console.log(`🚫 ${emptyRows} linhas vazias ignoradas`);
+        console.log(`✅ ${data.length} linhas processadas`);
         
-        return {
-            columns,
-            data,
-            metadata: {
-                totalRows: jsonData.length,
-                dataRows: data.length,
-                emptyRows: emptyRows,
-                headerRow: headerRowIndex + 1,
-                fileName: sheetName,
-                originalFileName: originalName,
-                processedAt: new Date().toISOString(),
-                fileSize: buffer.length
-            }
-        };
-        
-    } catch (error) {
-        console.error('❌ Erro no processamento:', error.message);
-        throw new Error(`Falha ao processar planilha: ${error.message}`);
-    }
-}
-
-// ========== FUNÇÕES DE QR CODE GARANTIDAS ==========
-
-function generateQRData(row, selectedColumns, allColumns, etiquetaNumero) {
-    try {
-        const qrInfo = {
-            id: `ETQ${etiquetaNumero.toString().padStart(4, '0')}`,
-            n: etiquetaNumero,
-            t: new Date().toISOString().split('T')[0],
-            d: {}
-        };
-        
-        let added = 0;
-        for (const colKey of selectedColumns) {
-            if (added >= 3) break;
-            
-            const column = allColumns.find(c => c.key === colKey);
-            if (!column) continue;
-            
-            const value = row[colKey];
-            if (value && value.toString().trim() !== '') {
-                const key = column.name.substring(0, 10);
-                const val = value.toString().substring(0, 25).trim();
-                
-                if (key && val) {
-                    qrInfo.d[key] = val;
-                    added++;
+        // Criar estrutura de colunas
+        const columns = headers.map((header, index) => {
+            // Encontrar sample value
+            let sampleValue = '';
+            for (let i = 0; i < Math.min(5, data.length); i++) {
+                const val = data[i][header.name];
+                if (val && val.trim() !== '') {
+                    sampleValue = val;
+                    break;
                 }
             }
-        }
-        
-        const qrString = JSON.stringify(qrInfo);
-        console.log(`🔳 Dados para QR Code (${etiquetaNumero}): ${qrString.substring(0, 50)}...`);
-        return qrString;
-        
-    } catch (error) {
-        console.warn('Erro ao gerar dados QR:', error);
-        return `ETIQUETA_${etiquetaNumero}_${Date.now()}`;
-    }
-}
-
-async function generateQRCodeImage(text) {
-    try {
-        console.log(`🔄 Gerando QR Code para texto de ${text.length} caracteres...`);
-        
-        const qrCodeUrl = await QRCode.toDataURL(text, {
-            errorCorrectionLevel: 'L', // Mais baixo = mais confiável
-            margin: 1,
-            width: 150, // Tamanho menor para garantir
-            color: {
-                dark: '#000000', // Preto sólido
-                light: '#FFFFFF' // Branco sólido
-            },
-            type: 'image/png'
+            
+            if (!sampleValue) {
+                sampleValue = '(vazio)';
+            }
+            
+            const pareceData = sampleValue.match(/^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}/);
+            const temHora = sampleValue.includes(':');
+            
+            return {
+                id: `col_${index}`,
+                name: header.name,
+                index: index,
+                sampleValue: sampleValue,
+                format: header.format,
+                pareceData: pareceData,
+                temDataHora: pareceData && temHora
+            };
         });
         
-        console.log(`✅ QR Code gerado: ${qrCodeUrl.length} bytes`);
-        return qrCodeUrl;
+        return {
+            columns: columns,
+            data: data,
+            worksheet: worksheet,
+            rowCount: data.length,
+            columnCount: columns.length
+        };
         
     } catch (error) {
-        console.error('❌ ERRO ao gerar QR Code:', error.message);
-        
-        // Fallback: QR Code mínimo
-        const blankQR = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-        return blankQR;
+        console.error('❌ Erro ao ler Excel:', error);
+        throw error;
     }
 }
 
-// ========== FUNÇÃO PARA DESENHAR ETIQUETA COM QR CODE GARANTIDO ==========
-
-async function drawLabel(doc, row, selectedColumns, allColumns, qrCodeImage, x, y, width, height, current, total) {
-    const MARGIN = 12;
-    const contentWidth = width - (2 * MARGIN);
-    
-    let currentY = y + MARGIN;
-    
-    // ========== CABEÇALHO ==========
-    const headerHeight = 28;
-    
-    doc.rect(x + MARGIN, currentY, contentWidth, headerHeight)
-       .fill('#f8fafc')
-       .stroke('#e2e8f0')
-       .stroke();
-    
-    doc.fontSize(16)
-       .font('Helvetica-Bold')
-       .fillColor('#4f46e5')
-       .text(`ETIQUETA ${current}`, 
-             x + MARGIN, currentY + 7, {
-                 width: contentWidth,
-                 align: 'center'
-             });
-    
-    doc.moveTo(x + MARGIN, currentY + headerHeight)
-       .lineTo(x + MARGIN + contentWidth, currentY + headerHeight)
-       .strokeColor('#e2e8f0')
-       .lineWidth(1)
-       .stroke();
-    
-    currentY += headerHeight + 15;
-    
-    // ========== DEFINIR LAYOUT FIXO (SEMPRE COM QR CODE) ==========
-    // 60% para dados, 40% para QR Code
-    const leftColumnWidth = contentWidth * 0.60;
-    const rightColumnWidth = contentWidth * 0.40;
-    const rightColumnX = x + MARGIN + leftColumnWidth + 5; // Menor gap
-    
-    // ========== COLUNA ESQUERDA: DADOS ==========
-    let dataCurrentY = currentY;
-    let maxDataHeight = height - currentY - MARGIN - 20; // Altura máxima para dados
-    
-    // Contador para limitar dados se necessário
-    let itemsDrawn = 0;
-    const maxItems = 10; // Máximo de itens de dados
-    
-    for (const colKey of selectedColumns) {
-        if (itemsDrawn >= maxItems) break;
-        
-        const column = allColumns.find(c => c.key === colKey);
-        if (!column) continue;
-        
-        const rawValue = row[colKey];
-        if (!rawValue || rawValue.toString().trim() === '') {
-            continue;
-        }
-        
-        const valueStr = rawValue.toString().trim();
-        
-        // Nome da coluna
-        doc.fontSize(8)
-           .font('Helvetica-Bold')
-           .fillColor('#4f46e5')
-           .text(`${column.name}:`, 
-                 x + MARGIN + 5, dataCurrentY, {
-                     width: leftColumnWidth - 10,
-                     align: 'left'
-                 });
-        
-        dataCurrentY += 10;
-        
-        // Valor
-        if (valueStr.includes('\n')) {
-            const lines = valueStr.split('\n').filter(l => l.trim());
-            for (let line of lines.slice(0, 2)) {
-                doc.fontSize(9)
-                   .font('Helvetica')
-                   .fillColor('#000000')
-                   .text(`${line.trim()}`, 
-                         x + MARGIN + 10, dataCurrentY, {
-                             width: leftColumnWidth - 15,
-                             align: 'left'
-                         });
-                
-                dataCurrentY += 12;
-            }
-        } else {
-            doc.fontSize(9)
-               .font('Helvetica')
-               .fillColor('#000000')
-               .text(`${valueStr}`, 
-                     x + MARGIN + 10, dataCurrentY, {
-                         width: leftColumnWidth - 15,
-                         align: 'left'
-                     });
-            
-            dataCurrentY += 14;
-        }
-        
-        dataCurrentY += 3;
-        itemsDrawn++;
-        
-        // Verificar se ainda cabe (deixando espaço para QR)
-        if (dataCurrentY > (y + maxDataHeight)) {
-            console.log(`⚠️ Limitando dados na etiqueta ${current} para caber QR Code`);
-            break;
-        }
-    }
-    
-    // ========== COLUNA DIREITA: QR CODE (SEMPRE DESENHADO) ==========
-    console.log(`🎯 Desenhando QR Code na etiqueta ${current}...`);
-    
-    // Área do QR Code - posição fixa
-    const qrAreaY = currentY;
-    const qrAreaHeight = height - currentY - MARGIN - 30;
-    const qrSize = Math.min(rightColumnWidth - 20, qrAreaHeight - 30); // Tamanho ajustado
-    
-    console.log(`📏 Área QR: x=${rightColumnX}, y=${qrAreaY}, w=${rightColumnWidth}, h=${qrAreaHeight}`);
-    console.log(`📐 Tamanho QR: ${qrSize}px`);
-    
-    // Fundo para área do QR
-    doc.rect(rightColumnX, qrAreaY, rightColumnWidth, qrAreaHeight)
-       .fill('#ffffff')
-       .stroke('#4f46e5') // Borda colorida para visibilidade
-       .lineWidth(1)
-       .stroke();
-    
-    // DESENHAR QR CODE (GARANTIDO)
-    let qrDrawn = false;
-    
-    if (qrCodeImage && qrCodeImage.startsWith('data:image/png;base64,')) {
-        try {
-            console.log(`📸 Tentando desenhar QR Code real...`);
-            const base64Data = qrCodeImage.split(',')[1];
-            const imageBuffer = Buffer.from(base64Data, 'base64');
-            
-            const qrX = rightColumnX + (rightColumnWidth - qrSize) / 2;
-            const qrY = qrAreaY + 10;
-            
-            console.log(`📍 Posição QR: x=${qrX}, y=${qrY}`);
-            
-            doc.image(imageBuffer, qrX, qrY, {
-                width: qrSize,
-                height: qrSize
-            });
-            
-            qrDrawn = true;
-            console.log(`✅ QR Code real desenhado na etiqueta ${current}`);
-            
-        } catch (imageError) {
-            console.error(`❌ Erro ao desenhar QR Code:`, imageError.message);
-        }
-    }
-    
-    // SE NÃO CONSEGUIU DESENHAR QR REAL, DESENHAR PLACEHOLDER VISÍVEL
-    if (!qrDrawn) {
-        console.log(`🎨 Desenhando placeholder do QR Code...`);
-        drawQRPlaceholderVisible(doc, rightColumnX, qrAreaY, rightColumnWidth, qrAreaHeight, current);
-    }
-    
-    // Título acima do QR
-    doc.fontSize(10)
-       .font('Helvetica-Bold')
-       .fillColor('#4f46e5')
-       .text('CÓDIGO QR', 
-             rightColumnX, qrAreaY + 3, {
-                 width: rightColumnWidth,
-                 align: 'center'
-             });
-    
-    // Instruções abaixo do QR
-    doc.fontSize(7)
-       .font('Helvetica')
-       .fillColor('#666666')
-       .text('Escaneie para', 
-             rightColumnX, qrAreaY + qrSize + 15, {
-                 width: rightColumnWidth,
-                 align: 'center'
-             });
-    
-    doc.fontSize(7)
-       .font('Helvetica')
-       .fillColor('#666666')
-       .text('ver informações', 
-             rightColumnX, qrAreaY + qrSize + 22, {
-                 width: rightColumnWidth,
-                 align: 'center'
-             });
-    
-    // ========== RODAPÉ ==========
-    const footerY = y + height - MARGIN - 15;
-    
-    doc.fontSize(8)
-       .font('Helvetica')
-       .fillColor('#999999')
-       .text(`${current}/${total}`, 
-             x + MARGIN, footerY, {
-                 width: contentWidth,
-                 align: 'right'
-             });
-}
-
-// FUNÇÃO PARA DESENHAR QR CODE PLACEHOLDER VISÍVEL
-function drawQRPlaceholderVisible(doc, x, y, width, height, etiquetaNumero) {
-    const centerX = x + width / 2;
-    const centerY = y + height / 2;
-    const boxSize = Math.min(width - 20, height - 40);
-    
-    console.log(`🎨 Desenhando placeholder em x=${centerX-boxSize/2}, y=${centerY-boxSize/2}, tamanho=${boxSize}`);
-    
-    // Caixa com fundo colorido
-    doc.rect(centerX - boxSize/2, centerY - boxSize/2, boxSize, boxSize)
-       .fill('#e0f2fe') // Azul claro
-       .stroke('#0ea5e9') // Azul
-       .lineWidth(1)
-       .stroke();
-    
-    // Grade simulando QR Code
-    const cellSize = boxSize / 7;
-    
-    // Desenhar células pretas
-    doc.fillColor('#000000');
-    
-    // Padrão fixo de células pretas
-    const blackCells = [
-        [1,1], [1,5], [2,2], [2,4], [3,3],
-        [4,2], [4,4], [5,1], [5,5]
-    ];
-    
-    for (const [row, col] of blackCells) {
-        const cellX = centerX - boxSize/2 + (col * cellSize);
-        const cellY = centerY - boxSize/2 + (row * cellSize);
-        
-        doc.rect(cellX + 1, cellY + 1, cellSize - 2, cellSize - 2)
-           .fill();
-    }
-    
-    // Texto "QR" no centro
-    doc.fontSize(12)
-       .font('Helvetica-Bold')
-       .fillColor('#0ea5e9')
-       .text('QR', 
-             centerX - 10, centerY - 8, {
-                 align: 'center'
-             });
-    
-    // Número da etiqueta pequeno
-    doc.fontSize(6)
-       .font('Helvetica')
-       .fillColor('#666666')
-       .text(`#${etiquetaNumero}`, 
-             centerX - 10, centerY + 10, {
-                 align: 'center'
-             });
-}
-
-// ========== FUNÇÃO PRINCIPAL PARA GERAR PDF ==========
-
-async function generateLabelsPDF(data, selectedColumns, allColumns, copiesPerLabel = 1) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            console.log(`\n📏 GERANDO PDF COM QR CODE GARANTIDO...`);
-            console.log(`📦 ${data.length} registros × ${copiesPerLabel} cópias`);
-            
-            // TAMANHO DA ETIQUETA 105x148mm
-            const ETIQUETA_LARGURA_MM = 105;
-            const ETIQUETA_ALTURA_MM = 148;
-            
-            const pageWidth = ETIQUETA_LARGURA_MM * 2.83465;
-            const pageHeight = ETIQUETA_ALTURA_MM * 2.83465;
-            
-            console.log(`📐 Tamanho página: ${pageWidth.toFixed(0)}x${pageHeight.toFixed(0)} pontos`);
-            
-            // Criar documento PDF
-            const doc = new PDFDocument({ 
-                margin: 0,
-                size: [pageWidth, pageHeight],
-                autoFirstPage: true
-            });
-            
-            const buffers = [];
-            doc.on('data', buffer => {
-                buffers.push(buffer);
-            });
-            
-            doc.on('end', () => {
-                const pdfData = Buffer.concat(buffers);
-                console.log(`✅ PDF gerado: ${pdfData.length} bytes`);
-                resolve(pdfData);
-            });
-            
-            doc.on('error', (err) => {
-                console.error('❌ Erro no PDF:', err);
-                reject(err);
-            });
-            
-            let totalEtiquetas = 0;
-            
-            // GERAR CADA ETIQUETA
-            for (let copy = 0; copy < copiesPerLabel; copy++) {
-                for (let i = 0; i < data.length; i++) {
-                    const row = data[i];
-                    totalEtiquetas++;
-                    
-                    if (totalEtiquetas > 1) {
-                        doc.addPage({
-                            size: [pageWidth, pageHeight],
-                            margin: 0
-                        });
-                    }
-                    
-                    if (totalEtiquetas % 5 === 0) {
-                        console.log(`   🏷️ ${totalEtiquetas} etiquetas geradas...`);
-                    }
-                    
-                    // GERAR QR CODE PARA ESTA ETIQUETA
-                    console.log(`\n🔳 Gerando QR Code para etiqueta ${totalEtiquetas}...`);
-                    const qrDataText = generateQRData(row, selectedColumns, allColumns, totalEtiquetas);
-                    const qrCodeImage = await generateQRCodeImage(qrDataText);
-                    
-                    // DESENHAR ETIQUETA
-                    console.log(`🎨 Desenhando etiqueta ${totalEtiquetas}...`);
-                    await drawLabel(doc, row, selectedColumns, allColumns, qrCodeImage, 
-                                  0, 0, pageWidth, pageHeight, totalEtiquetas, data.length * copiesPerLabel);
-                }
-            }
-            
-            console.log(`\n🎉 PDF finalizado com ${totalEtiquetas} etiquetas`);
-            doc.end();
-            
-        } catch (error) {
-            console.error('❌ Erro ao gerar PDF:', error);
-            reject(error);
-        }
-    });
-}
-
-// ========== ROTAS DA API ==========
-
-// Rota de teste
-app.get('/api/test', (req, res) => {
-    res.json({ 
+// ========== ROTAS API ==========
+app.get('/api/ping', (req, res) => {
+    res.json({
         success: true,
-        message: '✅ Backend funcionando com QR Code garantido!',
-        version: '5.0.0',
-        timestamp: new Date().toISOString()
+        message: 'pong 🏓',
+        server: 'Etiquetas API - QR Code Informativo',
+        time: new Date().toISOString(),
+        spreadsheetsCount: spreadsheets.length
     });
 });
 
-// Upload de planilha
-app.post('/api/upload', (req, res) => {
-    upload(req, res, async function(err) {
-        if (err) {
-            console.error('❌ Erro no upload:', err.message);
-            return res.status(400).json({
-                success: false,
-                message: err.message || 'Erro no upload do arquivo'
-            });
-        }
-        
+app.post('/api/upload', upload.single('spreadsheet'), async (req, res) => {
+    try {
         if (!req.file) {
             return res.status(400).json({
                 success: false,
-                message: 'Nenhum arquivo selecionado'
+                error: 'Nenhum arquivo enviado'
             });
         }
         
-        try {
-            console.log(`\n📤 Upload: ${req.file.originalname}`);
-            
-            const result = await processExcel(req.file.buffer, req.file.originalname);
-            const id = `sheet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            
-            spreadsheetManager.set(id, {
-                id,
-                originalName: req.file.originalname,
-                uploadDate: new Date().toISOString(),
-                fileSize: req.file.size,
-                ...result
-            });
-            
-            console.log(`✅ Upload concluído: ${id}`);
-            
-            res.json({
-                success: true,
-                message: `✅ Planilha processada com sucesso!`,
-                data: {
-                    id,
-                    fileName: req.file.originalname,
-                    records: result.data.length,
-                    columns: result.columns.map(c => ({
-                        name: c.name,
-                        key: c.key,
-                        hasMultipleLines: c.hasMultipleLines
-                    })),
-                    metadata: result.metadata
-                }
-            });
-            
-        } catch (error) {
-            console.error('❌ Erro no processamento:', error);
-            res.status(500).json({
-                success: false,
-                message: `Erro: ${error.message}`
-            });
-        }
-    });
-});
-
-// Listar planilhas
-app.get('/api/spreadsheets', (req, res) => {
-    try {
-        const spreadsheets = spreadsheetManager.getAll();
+        console.log(`📤 Processando: ${req.file.originalname}`);
+        
+        const resultado = await lerExcelCorretamente(req.file.path);
+        
+        const spreadsheet = {
+            id: `sheet_${Date.now()}`,
+            fileName: req.file.originalname,
+            filePath: req.file.path,
+            uploadDate: new Date().toISOString(),
+            columns: resultado.columns,
+            data: resultado.data,
+            rawWorksheet: resultado.worksheet,
+            rowCount: resultado.rowCount,
+            columnCount: resultado.columnCount
+        };
+        
+        spreadsheets.push(spreadsheet);
         
         res.json({
             success: true,
-            spreadsheets,
-            count: spreadsheets.length,
-            totalRecords: spreadsheets.reduce((sum, sheet) => sum + (sheet.records || 0), 0),
-            serverTime: new Date().toISOString()
+            message: `Planilha processada: ${resultado.rowCount} linhas, ${resultado.columnCount} colunas`,
+            spreadsheet: {
+                id: spreadsheet.id,
+                fileName: spreadsheet.fileName,
+                rowCount: spreadsheet.rowCount,
+                columnCount: spreadsheet.columnCount
+            }
         });
         
     } catch (error) {
-        console.error('Erro ao listar planilhas:', error);
+        console.error('❌ Erro no upload:', error);
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
         res.status(500).json({
             success: false,
-            message: 'Erro ao listar planilhas'
-        });
-    }
-});
-
-// Obter dados de uma planilha
-app.get('/api/spreadsheets/:id/data', (req, res) => {
-    try {
-        const sheet = spreadsheetManager.get(req.params.id);
-        
-        if (!sheet) {
-            return res.status(404).json({
-                success: false,
-                message: 'Planilha não encontrada'
-            });
-        }
-        
-        const previewData = sheet.data.slice(0, 100).map((row, idx) => ({
-            index: idx + 1,
-            data: row,
-            preview: sheet.columns.slice(0, 3).map(col => {
-                const value = row[col.key];
-                if (!value && value !== 0) return `${col.name}: [VAZIO]`;
-                return `${col.name}: ${String(value).substring(0, 30)}`;
-            }).join(' | ')
-        }));
-        
-        res.json({
-            success: true,
-            data: previewData,
-            columns: sheet.columns.map(c => ({
-                name: c.name,
-                key: c.key,
-                hasMultipleLines: c.hasMultipleLines,
-                originalIndex: c.originalIndex
-            })),
-            totalRecords: sheet.data.length,
-            metadata: sheet.metadata
-        });
-        
-    } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao carregar dados'
-        });
-    }
-});
-
-// Gerar PDF
-app.get('/api/generate-pdf/:id', async (req, res) => {
-    console.log('\n📄 SOLICITAÇÃO DE PDF RECEBIDA');
-    console.log(`📋 Planilha ID: ${req.params.id}`);
-    console.log(`📋 Parâmetros:`, req.query);
-    
-    try {
-        const sheet = spreadsheetManager.get(req.params.id);
-        
-        if (!sheet) {
-            console.error('❌ Planilha não encontrada');
-            return res.status(404).json({
-                success: false,
-                message: 'Planilha não encontrada'
-            });
-        }
-        
-        console.log(`✅ Planilha encontrada: ${sheet.metadata.fileName}`);
-        console.log(`📊 Total de registros: ${sheet.data.length}`);
-        
-        // Obter colunas selecionadas
-        const selectedColumns = req.query.columns ? 
-            req.query.columns.split(',').filter(c => c && c.trim() !== '') : [];
-        
-        if (selectedColumns.length === 0) {
-            console.error('❌ Nenhuma coluna selecionada');
-            return res.status(400).json({
-                success: false,
-                message: 'Selecione pelo menos uma coluna'
-            });
-        }
-        
-        console.log(`✅ Colunas selecionadas: ${selectedColumns.length}`);
-        
-        // Obter número de cópias
-        const copies = parseInt(req.query.copies) || 1;
-        console.log(`✅ Cópias: ${copies}`);
-        
-        // Usar todos os dados
-        let dataToUse = sheet.data;
-        
-        // Limitar máximo de etiquetas
-        const MAX_ETIQUETAS = 500;
-        const totalEtiquetas = dataToUse.length * copies;
-        
-        if (totalEtiquetas > MAX_ETIQUETAS) {
-            console.warn(`⚠️ Limitando para ${MAX_ETIQUETAS} etiquetas`);
-            const maxRegistros = Math.floor(MAX_ETIQUETAS / copies);
-            dataToUse = dataToUse.slice(0, maxRegistros);
-        }
-        
-        console.log(`🔄 Gerando PDF com ${dataToUse.length} registros...`);
-        
-        // Gerar PDF
-        const pdfBuffer = await generateLabelsPDF(dataToUse, selectedColumns, sheet.columns, copies);
-        
-        if (!pdfBuffer || pdfBuffer.length === 0) {
-            throw new Error('PDF gerado está vazio');
-        }
-        
-        console.log(`✅ PDF gerado com sucesso: ${pdfBuffer.length} bytes`);
-        
-        // Configurar headers para download
-        const fileName = `etiquetas_${Date.now()}.pdf`;
-        
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-        res.setHeader('Content-Length', pdfBuffer.length);
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-        
-        // Enviar PDF
-        console.log(`📤 Enviando PDF para download...`);
-        res.send(pdfBuffer);
-        
-    } catch (error) {
-        console.error('❌ ERRO AO GERAR PDF:', error);
-        
-        if (!res.headersSent) {
-            res.status(500).json({
-                success: false,
-                message: `Erro ao gerar PDF: ${error.message}`,
-                error: process.env.NODE_ENV === 'development' ? error.stack : undefined
-            });
-        }
-    }
-});
-
-// Excluir planilha
-app.delete('/api/spreadsheets/:id', (req, res) => {
-    try {
-        const deleted = spreadsheetManager.delete(req.params.id);
-        
-        res.json({
-            success: true,
-            message: deleted ? '✅ Planilha excluída com sucesso' : 'Planilha não encontrada',
-            deleted: deleted
-        });
-    } catch (error) {
-        console.error('Erro ao excluir:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao excluir planilha'
-        });
-    }
-});
-
-// Teste de QR Code
-app.get('/api/test-qrcode', async (req, res) => {
-    try {
-        const testText = `Teste QR Code ${new Date().toLocaleString('pt-BR')}`;
-        console.log(`🔳 Testando QR Code com texto: ${testText}`);
-        
-        const qrCode = await generateQRCodeImage(testText);
-        
-        res.json({
-            success: true,
-            message: 'QR Code testado',
-            hasQRCode: !!qrCode,
-            qrCodeSize: qrCode ? qrCode.length : 0,
-            preview: qrCode ? qrCode.substring(0, 50) + '...' : null
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Erro no teste de QR Code',
             error: error.message
         });
     }
 });
 
-// Servir frontend
-app.get('*', (req, res) => {
+app.get('/api/spreadsheets', (req, res) => {
+    const simplifiedList = spreadsheets.map(sheet => ({
+        id: sheet.id,
+        fileName: sheet.fileName,
+        rowCount: sheet.rowCount,
+        columnCount: sheet.columnCount,
+        uploadDate: sheet.uploadDate
+    }));
+    
+    res.json({
+        success: true,
+        spreadsheets: simplifiedList,
+        total: simplifiedList.length
+    });
+});
+
+app.get('/api/spreadsheet/:id', (req, res) => {
+    const id = req.params.id;
+    const spreadsheet = spreadsheets.find(s => s.id === id);
+    
+    if (!spreadsheet) {
+        return res.status(404).json({
+            success: false,
+            error: 'Planilha não encontrada'
+        });
+    }
+    
+    res.json({
+        success: true,
+        data: {
+            id: spreadsheet.id,
+            fileName: spreadsheet.fileName,
+            rowCount: spreadsheet.rowCount,
+            columnCount: spreadsheet.columnCount,
+            columns: spreadsheet.columns,
+            data: spreadsheet.data.slice(0, 10),
+            primeiraLinha: spreadsheet.data[0]
+        }
+    });
+});
+
+app.delete('/api/spreadsheet/:id', (req, res) => {
+    const id = req.params.id;
+    const index = spreadsheets.findIndex(s => s.id === id);
+    
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            error: 'Planilha não encontrada'
+        });
+    }
+    
+    const spreadsheet = spreadsheets[index];
+    
+    if (fs.existsSync(spreadsheet.filePath)) {
+        fs.unlinkSync(spreadsheet.filePath);
+    }
+    
+    spreadsheets.splice(index, 1);
+    
+    res.json({
+        success: true,
+        message: 'Planilha excluída'
+    });
+});
+
+// ========== ROTA PARA TESTAR QR CODE ==========
+app.post('/api/test-qrcode', async (req, res) => {
+    try {
+        const { texto } = req.body;
+        
+        if (!texto) {
+            return res.status(400).json({
+                success: false,
+                error: 'Texto é obrigatório'
+            });
+        }
+        
+        const qrCodeDataURL = await QRCode.toDataURL(texto, {
+            width: 300,
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            }
+        });
+        
+        res.json({
+            success: true,
+            qrCode: qrCodeDataURL,
+            texto: texto,
+            nota: 'QR Code gerado com sucesso'
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao gerar QR Code de teste:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ========== GERAR ETIQUETAS COM QR CODE INFORMATIVO ==========
+app.post('/api/generate', async (req, res) => {
+    console.log('🏷️ Gerando etiquetas com QR Code informativo...');
+    
+    try {
+        const { 
+            spreadsheetId, 
+            columns, 
+            mode = 'all',
+            rowIndex = 0,
+            quantity = 1
+        } = req.body;
+        
+        if (!spreadsheetId) {
+            return res.status(400).json({
+                success: false,
+                error: 'ID da planilha é obrigatório'
+            });
+        }
+        
+        const spreadsheet = spreadsheets.find(s => s.id === spreadsheetId);
+        if (!spreadsheet) {
+            return res.status(404).json({
+                success: false,
+                error: 'Planilha não encontrada'
+            });
+        }
+        
+        const selectedColumns = spreadsheet.columns.filter(col => columns.includes(col.id));
+        if (selectedColumns.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Selecione pelo menos uma coluna'
+            });
+        }
+        
+        console.log(`✅ ${selectedColumns.length} colunas selecionadas`);
+        
+        // Definir dados a serem processados
+        let dataToProcess = [];
+        let totalLabels = 0;
+        
+        if (mode === 'all') {
+            dataToProcess = spreadsheet.data;
+            totalLabels = spreadsheet.rowCount;
+            console.log(`📊 Gerando ${totalLabels} etiquetas`);
+        } else if (mode === 'single') {
+            if (rowIndex < 0 || rowIndex >= spreadsheet.rowCount) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Índice de linha inválido`
+                });
+            }
+            
+            if (quantity < 1 || quantity > 1000) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Quantidade inválida'
+                });
+            }
+            
+            const selectedRow = spreadsheet.data[rowIndex];
+            for (let i = 0; i < quantity; i++) {
+                dataToProcess.push(selectedRow);
+            }
+            totalLabels = quantity;
+            console.log(`📊 Gerando ${quantity} etiquetas da linha ${rowIndex + 1}`);
+        }
+        
+        // ========== TAMANHO 120×80mm ==========
+        const MM_TO_POINTS = 2.834645669;
+        const PAGE_HEIGHT_MM = 120;
+        const PAGE_WIDTH_MM = 80;
+        
+        const PAGE_HEIGHT = Math.round(PAGE_HEIGHT_MM * MM_TO_POINTS);
+        const PAGE_WIDTH = Math.round(PAGE_WIDTH_MM * MM_TO_POINTS);
+        
+        // Tamanho do QR Code
+        const QR_SIZE = 45; // 40 pontos = ~14mm"
+        
+        // Criar PDF
+        const doc = new PDFDocument({
+            size: [PAGE_WIDTH, PAGE_HEIGHT],
+            margin: 0,
+            autoFirstPage: false
+        });
+        
+        let fileName;
+        if (mode === 'all') {
+            fileName = `etiquetas_${spreadsheet.fileName.replace(/\.[^/.]+$/, "")}_${Date.now()}.pdf`;
+        } else {
+            fileName = `etiquetas_linha${rowIndex + 1}_x${quantity}_${Date.now()}.pdf`;
+        }
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        
+        doc.pipe(res);
+        
+        // Configurar fontes
+        doc.registerFont('Helvetica', 'Helvetica');
+        doc.registerFont('Helvetica-Bold', 'Helvetica-Bold');
+        
+        // ========== GERAR ETIQUETAS ==========
+        let etiquetasGeradas = 0;
+        
+        for (let index = 0; index < dataToProcess.length; index++) {
+            const rowData = dataToProcess[index];
+            
+            // Verificar se tem dados reais
+            const temDadosReais = selectedColumns.some(col => {
+                const valor = rowData[col.name];
+                return valor && valor.toString().trim() !== '';
+            });
+            
+            if (!temDadosReais) {
+                console.log(`⚠️ Linha ${index + 1} sem dados, pulando etiqueta`);
+                continue;
+            }
+            
+            // ADICIONAR PÁGINA
+            doc.addPage({
+                size: [PAGE_WIDTH, PAGE_HEIGHT],
+                margins: { top: 0, bottom: 0, left: 0, right: 0 }
+            });
+            
+            etiquetasGeradas++;
+            
+            // Cabeçalho da etiqueta
+            const headerHeight = 25;
+            doc.rect(0, 0, PAGE_WIDTH, headerHeight)
+               .fill('#4f46e5');
+            
+            if (mode === 'all') {
+                doc.fontSize(12)
+                   .fillColor('white')
+                   .font('Helvetica-Bold')
+                   .text(`ETIQUETA ${etiquetasGeradas}`, 15, 8);
+                
+                doc.fontSize(10)
+                   .fillColor('rgba(255, 255, 255, 0.8)')
+                   .text(`${etiquetasGeradas}/${totalLabels}`, PAGE_WIDTH - 60, 10, { align: 'right' });
+            } else {
+                doc.fontSize(12)
+                   .fillColor('white')
+                   .font('Helvetica-Bold')
+                   .text(`ETIQUETA ${etiquetasGeradas}`, 15, 8);
+                
+                doc.fontSize(10)
+                   .fillColor('rgba(255, 255, 255, 0.8)')
+                   .text(`Cópia ${etiquetasGeradas}/${quantity}`, PAGE_WIDTH - 80, 10, { align: 'right' });
+            }
+            
+            // Área de conteúdo
+            const CONTENT_START_Y = headerHeight + 15;
+            
+            // Filtrar colunas com dados
+            const columnsWithData = selectedColumns.filter(col => {
+                const value = rowData[col.name];
+                return value && value.toString().trim() !== '';
+            });
+            
+            // Layout das colunas
+            const COLUMN_COUNT = 2;
+            const COLUMN_WIDTH = (PAGE_WIDTH - 40) / COLUMN_COUNT;
+            const CARD_HEIGHT = 38;
+            const CARD_SPACING = 8;
+            
+            let columnData = [[], []];
+            
+            // Distribuir colunas
+            columnsWithData.forEach((col, colIndex) => {
+                const columnIdx = colIndex % COLUMN_COUNT;
+                columnData[columnIdx].push(col);
+            });
+            
+            // Desenhar colunas
+            for (let colIndex = 0; colIndex < COLUMN_COUNT; colIndex++) {
+                const currentX = 15 + (colIndex * (COLUMN_WIDTH + 10));
+                let currentY = CONTENT_START_Y;
+                
+                // Processar cartões
+                columnData[colIndex].forEach((col, cardIndex) => {
+                    if (currentY + CARD_HEIGHT > PAGE_HEIGHT - 60) return;
+                    
+                    const cellValue = rowData[col.name];
+                    if (!cellValue || cellValue.toString().trim() === '') return;
+                    
+                    // Criar cartão
+                    doc.roundedRect(currentX, currentY, COLUMN_WIDTH - 5, CARD_HEIGHT, 5)
+                       .fill('#f8fafc')
+                       .stroke('#e2e8f0')
+                       .stroke();
+                    
+                    // Nome da coluna
+                    doc.fontSize(7)
+                       .fillColor('#64748b')
+                       .font('Helvetica')
+                       .text(col.name.toUpperCase(), 
+                             currentX + 6, 
+                             currentY + 6, 
+                             { width: COLUMN_WIDTH - 15 });
+                    
+                    // Valor
+                    let valueText = String(cellValue);
+                    
+                    if (valueText.length > 25 && !col.temDataHora) {
+                        valueText = valueText.substring(0, 22) + '...';
+                    }
+                    
+                    doc.fontSize(col.temDataHora ? 8 : 9)
+                       .fillColor('#1e293b')
+                       .font('Helvetica-Bold')
+                       .text(valueText, 
+                             currentX + 6, 
+                             currentY + (col.temDataHora ? 18 : 20),
+                             { width: COLUMN_WIDTH - 15, ellipsis: true });
+                    
+                    currentY += CARD_HEIGHT + CARD_SPACING;
+                });
+            }
+            
+            // 🔥 GERAR QR CODE COM INFORMAÇÕES COMPLETAS
+            try {
+                const qrCodeDataURL = await gerarQRCodeParaEtiqueta(
+                    etiquetasGeradas,
+                    totalLabels,
+                    spreadsheet,
+                    rowData,
+                    selectedColumns,
+                    mode,
+                    rowIndex
+                );
+                
+                if (qrCodeDataURL) {
+                    // Posicionar no canto inferior direito
+                    const qrX = PAGE_WIDTH - QR_SIZE - 15;
+                    const qrY = PAGE_HEIGHT - QR_SIZE - 15;
+                    
+                    // Adicionar QR Code ao PDF
+                    doc.image(qrCodeDataURL, qrX, qrY, {
+                        width: QR_SIZE,
+                        height: QR_SIZE
+                    });
+                    
+                    // Adicionar borda e legenda
+                    doc.rect(qrX - 2, qrY - 2, QR_SIZE + 4, QR_SIZE + 4)
+                       .stroke('#4f46e5')
+                       .lineWidth(0.5);
+                    
+                    // Texto abaixo do QR Code
+                    doc.fontSize(5)
+                       .fillColor('#4f46e5')
+                       .text('Escanear para ver dados', 
+                             qrX, 
+                             qrY + QR_SIZE + 2,
+                             { width: QR_SIZE, align: 'center' });
+                    
+                    console.log(`✅ QR Code informativo adicionado na etiqueta ${etiquetasGeradas}`);
+                }
+            } catch (qrError) {
+                console.error(`❌ Erro no QR Code: ${qrError.message}`);
+                // Desenhar placeholder em caso de erro
+                const qrX = PAGE_WIDTH - QR_SIZE - 15;
+                const qrY = PAGE_HEIGHT - QR_SIZE - 15;
+                
+                doc.rect(qrX, qrY, QR_SIZE, QR_SIZE)
+                   .fill('#f8fafc')
+                   .stroke('#e2e8f0')
+                   .stroke();
+                
+                doc.fontSize(6)
+                   .fillColor('#94a3b8')
+                   .text('QR Code\nindisponível', 
+                         qrX + 5, 
+                         qrY + QR_SIZE/2 - 6,
+                         { width: QR_SIZE - 10, align: 'center' });
+            }
+            
+            // Rodapé
+            doc.fontSize(6)
+               .fillColor('#94a3b8')
+               .text(`${spreadsheet.fileName}`, 
+                     15, 
+                     PAGE_HEIGHT - 25,
+                     { width: PAGE_WIDTH - (QR_SIZE + 40), align: 'left' });
+        }
+        
+        // Se nenhuma etiqueta foi gerada
+        if (etiquetasGeradas === 0) {
+            doc.addPage({
+                size: [PAGE_WIDTH, PAGE_HEIGHT],
+                margins: { top: 0, bottom: 0, left: 0, right: 0 }
+            });
+            
+            doc.fontSize(14)
+               .fillColor('#64748b')
+               .text('Nenhum dado encontrado', 
+                     30, 
+                     PAGE_HEIGHT / 2 - 20,
+                     { align: 'center' });
+        }
+        
+        doc.end();
+        
+        console.log(`✅ PDF gerado: ${fileName}`);
+        console.log(`✅ ${etiquetasGeradas} etiquetas com QR Code informativo`);
+        
+    } catch (error) {
+        console.error('❌ Erro ao gerar PDF:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ========== ROTAS PÁGINAS ==========
+app.get('/', (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-// ========== INICIAR SERVIDOR ==========
+app.get('/upload', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'upload.html'));
+});
 
-const server = app.listen(PORT, () => {
-    console.log('\n' + '='.repeat(60));
-    console.log('✅ SERVIDOR INICIADO COM SUCESSO!');
-    console.log('='.repeat(60));
-    console.log(`📍 URL: http://localhost:${PORT}`);
-    console.log(`📁 Frontend: ${frontendPath}`);
-    console.log(`🔳 QR Code: GARANTIDO e visível`);
-    console.log(`📏 Layout: 60% dados + 40% QR Code`);
-    console.log(`🎨 Placeholder: Colorido se QR falhar`);
-    console.log('='.repeat(60));
-    console.log('📝 Endpoints:');
-    console.log('  • GET  /api/test              - Testar conexão');
-    console.log('  • GET  /api/test-qrcode       - Testar QR Code');
-    console.log('  • POST /api/upload            - Upload planilha');
-    console.log('  • GET  /api/spreadsheets      - Listar planilhas');
-    console.log('  • GET  /api/spreadsheets/:id  - Dados da planilha');
-    console.log('  • GET  /api/generate-pdf/:id  - ✅ Gerar PDF com QR');
-    console.log('  • DELETE /api/spreadsheets/:id - Excluir planilha');
-    console.log('='.repeat(60));
-    console.log('🚀 Sistema pronto! QR Code será SEMPRE visível!');
-    console.log('='.repeat(60));
+app.get('/generate', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'generate.html'));
+});
+
+// ========== INICIAR ==========
+app.listen(PORT, () => {
+    console.log('='.repeat(70));
+    console.log(`🚀 SISTEMA DE ETIQUETAS - QR CODE INFORMATIVO`);
+    console.log('='.repeat(70));
+    console.log(`✅ Backend: http://localhost:${PORT}`);
+    console.log(`✅ Upload: http://localhost:${PORT}/upload`);
+    console.log(`✅ Gerar: http://localhost:${PORT}/generate`);
+    console.log('='.repeat(70));
+    console.log('🔥 QR CODE MELHORADO:');
+    console.log('• Ao escanear, mostra TODOS os dados da etiqueta');
+    console.log('• Formatação organizada e legível');
+    console.log('• Inclui informações do sistema');
+    console.log('• Inclui data/hora de geração');
+    console.log('• Inclui modo de operação');
+    console.log('='.repeat(70));
+    console.log('📱 TESTAR QR CODE:');
+    console.log('POST http://localhost:3001/api/test-qrcode');
+    console.log('Body: {"texto": "Conteúdo do QR Code"}');
+    console.log('='.repeat(70));
 });
