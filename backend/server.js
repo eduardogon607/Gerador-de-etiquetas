@@ -1,5 +1,4 @@
-
-// backend/server.js - QR CODE COM INFORMAÇÕES COMPLETAS
+// No início do server.js, substitua:
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -10,39 +9,41 @@ const cors = require('cors');
 const QRCode = require('qrcode');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001; // Render usa PORT
 
 // ========== CONFIGURAÇÕES ==========
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:3001', 'https://seu-frontend.onrender.com'], // Adicione seu frontend
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Usar diretório temporário do Render
 const frontendPath = path.join(__dirname, '../frontend');
 app.use(express.static(frontendPath));
 
-if (!fs.existsSync('uploads')) {
-    fs.mkdirSync('uploads', { recursive: true });
+// Criar diretório temporário (Render limpa periodicamente)
+const UPLOAD_DIR = '/tmp/uploads';
+if (!fs.existsSync(UPLOAD_DIR)) {
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
-// ========== UPLOAD ==========
+// ========== UPLOAD CONFIG ==========
 const upload = multer({
     storage: multer.diskStorage({
-        destination: 'uploads/',
+        destination: UPLOAD_DIR,
         filename: (req, file, cb) => {
             const uniqueName = Date.now() + '-' + Math.random().toString(36).substring(7) + path.extname(file.originalname);
             cb(null, uniqueName);
         }
     }),
-    fileFilter: (req, file, cb) => {
-        const ext = path.extname(file.originalname).toLowerCase();
-        if (['.xlsx', '.xls'].includes(ext)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Apenas arquivos Excel (.xlsx, .xls) são permitidos'));
-        }
-    },
-    limits: { fileSize: 10 * 1024 * 1024 }
+    // ... resto igual
 });
+
+
+    limits: { fileSize: 10 * 1024 * 1024 }
+;
 
 // ========== DADOS ==========
 let spreadsheets = [];

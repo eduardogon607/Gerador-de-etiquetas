@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: etiquetas-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+    disk:
+      name: tmp-uploads
+      mountPath: /tmp/uploads
+      sizeGB: 1
