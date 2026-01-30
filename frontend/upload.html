@@ -345,7 +345,18 @@
         // O JAVASCRIPT CONTINUA EXATAMENTE IGUAL
         // ========== CONFIGURAÇÕES ==========
         // URL da API - se estiver na mesma origem, usa relativa
-        const API_URL = window.location.origin + '/api';
+        // DEPOIS - COM FALLBACK:
+const API_URL = (function() {
+    // Se estiver em localhost
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3001/api';
+    }
+    // Se estiver no Render (substitua pelo SEU backend URL)
+    return 'https://seu-backend.onrender.com/api';
+})();
+
+console.log('🌐 URL Atual:', window.location.href);
+console.log('🔗 API URL Configurada:', API_URL);
         console.log('🔗 API URL:', API_URL);
         
         let conexaoAtiva = false;
