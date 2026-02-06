@@ -1,4 +1,4 @@
-// No início do server.js, substitua:
+// ========== IMPORTS ==========
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -8,345 +8,229 @@ const PDFDocument = require('pdfkit');
 const cors = require('cors');
 const QRCode = require('qrcode');
 
+// ========== CONFIGURAÇÃO ==========
 const app = express();
-const PORT = process.env.PORT || 3001; // Render usa PORT
+const PORT = 3001;
 
-// ========== CONFIGURAÇÕES ==========
-app.use(cors({
-    origin: ['http://localhost:3001', 'https://seu-frontend.onrender.com'], // Adicione seu frontend
-    credentials: true
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ========== CONFIGURAÇÃO CORS ==========
+app.use(cors());
 
-// Usar diretório temporário do Render
-const frontendPath = path.join(__dirname, '../frontend');
-app.use(express.static(frontendPath));
+// ========== MIDDLEWARES ==========
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Criar diretório temporário (Render limpa periodicamente)
-const UPLOAD_DIR = '/tmp/uploads';
-if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// Servir arquivos estáticos
+const frontendPath = path.join(__dirname, '..', 'frontend');
+if (fs.existsSync(frontendPath)) {
+    app.use(express.static(frontendPath));
+    console.log(`✅ Frontend sendo servido de: ${frontendPath}`);
 }
 
-// ========== UPLOAD CONFIG ==========
+// ========== CONFIGURAÇÃO DE UPLOAD ==========
+const UPLOAD_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOAD_DIR)) {
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    console.log(`📁 Pasta upload criada: ${UPLOAD_DIR}`);
+}
+
 const upload = multer({
     storage: multer.diskStorage({
-        destination: UPLOAD_DIR,
+        destination: (req, file, cb) => {
+            cb(null, UPLOAD_DIR);
+        },
         filename: (req, file, cb) => {
-            const uniqueName = Date.now() + '-' + Math.random().toString(36).substring(7) + path.extname(file.originalname);
+            const safeName = file.originalname.replace(/[<>:"/\\|?*]/g, '_');
+            const uniqueName = Date.now() + '-' + Math.random().toString(36).substring(2, 9) + path.extname(safeName);
             cb(null, uniqueName);
         }
     }),
-    // ... resto igual
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = /\.(xlsx|xls)$/i;
+        const isValid = allowedTypes.test(path.extname(file.originalname));
+        cb(null, isValid);
+    },
+    limits: {
+        fileSize: 20 * 1024 * 1024
+    }
 });
 
-
-    limits: { fileSize: 10 * 1024 * 1024 }
-;
-
-// ========== DADOS ==========
+// ========== DADOS EM MEMÓRIA ==========
 let spreadsheets = [];
 
-// ========== FUNÇÃO PARA FORÇAR FORMATO BRASILEIRO ==========
-function formatarComoBrasileiro(valor, formatoExcel) {
-    if (!valor && valor !== 0) return '';
-    
-    // Se já é string, verificar se é data
-    if (typeof valor === 'string') {
-        const str = valor.trim();
-        
-        // Verificar padrão de data (dd/mm/aaaa ou mm/dd/aaaa)
-        const padraoData = /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})(.*)$/;
-        const match = str.match(padraoData);
-        
-        if (match) {
-            const p1 = parseInt(match[1]);
-            const p2 = parseInt(match[2]);
-            const ano = match[3];
-            const resto = match[4] || '';
-            
-            // Se p1 > 12 e p2 <= 12 → já está dd/mm (BR)
-            if (p1 > 12 && p2 <= 12) {
-                return str;
-            }
-            
-            // Se p1 <= 12 e p2 > 12 → está invertido (mm/dd)
-            if (p1 <= 12 && p2 > 12) {
-                const dia = p2.toString().padStart(2, '0');
-                const mes = p1.toString().padStart(2, '0');
-                const anoCompleto = ano.length === 2 ? `20${ano}` : ano;
-                return `${dia}/${mes}/${anoCompleto}${resto}`;
-            }
-            
-            // Se ambos <= 12, verificar pelo formato do Excel
-            if (p1 <= 12 && p2 <= 12) {
-                // Se o formato Excel é americano (começa com m), inverter
-                if (formatoExcel && formatoExcel.toLowerCase().startsWith('m')) {
-                    const dia = p2.toString().padStart(2, '0');
-                    const mes = p1.toString().padStart(2, '0');
-                    const anoCompleto = ano.length === 2 ? `20${ano}` : ano;
-                    return `${dia}/${mes}/${anoCompleto}${resto}`;
-                }
-            }
-        }
-        
-        return str;
+// ========== FUNÇÕES AUXILIARES ==========
+
+// Função para converter datas de mm/dd/yyyy para dd/mm/yyyy
+function convertToBrazilianDate(dateString) {
+    if (!dateString || typeof dateString !== 'string') {
+        return dateString;
     }
     
-    // Se for número (serial do Excel)
-    if (typeof valor === 'number') {
-        try {
-            // Converter serial do Excel para data
-            const excelSerial = valor;
-            
-            // Verificar se é data (está no intervalo típico)
-            if (excelSerial > 0 && excelSerial < 50000) {
-                const baseDate = new Date(1899, 11, 30);
-                const date = new Date(baseDate.getTime() + excelSerial * 24 * 60 * 60 * 1000);
-                
-                const dia = String(date.getDate()).padStart(2, '0');
-                const mes = String(date.getMonth() + 1).padStart(2, '0');
-                const ano = date.getFullYear();
-                
-                let resultado = `${dia}/${mes}/${ano}`;
-                
-                // Se tem parte decimal, adicionar hora
-                const parteDecimal = excelSerial - Math.floor(excelSerial);
-                if (parteDecimal > 0) {
-                    const horas = String(date.getHours()).padStart(2, '0');
-                    const minutos = String(date.getMinutes()).padStart(2, '0');
-                    resultado += ` ${horas}:${minutos}`;
-                    
-                    if (date.getSeconds() > 0) {
-                        const segundos = String(date.getSeconds()).padStart(2, '0');
-                        resultado += `:${segundos}`;
-                    }
-                }
-                
-                return resultado;
-            }
-            
-            return valor.toString();
-            
-        } catch (error) {
-            return valor.toString();
-        }
+    const trimmed = dateString.trim();
+    
+    // Se já está em formato dd/mm/yyyy, retorna como está
+    if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(trimmed)) {
+        return trimmed;
     }
     
-    return String(valor);
+    // Tentar converter de mm/dd/yyyy para dd/mm/yyyy
+    // Formato americano: 3/15/2024 ou 03/15/2024
+    const americanFormat = trimmed.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
+    if (americanFormat) {
+        const [, month, day, year] = americanFormat;
+        // Se o ano tem 2 dígitos, assumir século 21
+        const fullYear = year.length === 2 ? `20${year}` : year;
+        return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${fullYear}`;
+    }
+    
+    // Tentar converter de mm/dd/yyyy hh:mm para dd/mm/yyyy hh:mm
+    const americanWithTime = trimmed.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})\s+(\d{1,2}):(\d{1,2})$/);
+    if (americanWithTime) {
+        const [, month, day, year, hour, minute] = americanWithTime;
+        const fullYear = year.length === 2 ? `20${year}` : year;
+        return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${fullYear} ${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
+    }
+    
+    // Tentar converter de yyyy-mm-dd para dd/mm/yyyy
+    const isoFormat = trimmed.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
+    if (isoFormat) {
+        const [, year, month, day] = isoFormat;
+        return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+    
+    // Tentar converter de yyyy-mm-dd hh:mm para dd/mm/yyyy hh:mm
+    const isoWithTime = trimmed.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})\s+(\d{1,2}):(\d{1,2})$/);
+    if (isoWithTime) {
+        const [, year, month, day, hour, minute] = isoWithTime;
+        return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year} ${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
+    }
+    
+    // Se não for nenhum formato de data conhecido, retorna original
+    return trimmed;
 }
 
-// ========== FUNÇÃO PARA GERAR TEXTO DO QR CODE ==========
-function gerarTextoQRCode(etiquetaNumero, totalEtiquetas, spreadsheet, rowData, selectedColumns, mode, rowIndex) {
-    // Criar texto formatado para o QR Code
-    let texto = "=".repeat(40) + "\n";
-    texto += "🏷️ ETIQUETA DIGITAL\n";
-    texto += "=".repeat(40) + "\n\n";
+// Função para obter o valor formatado da célula
+function getExcelCellValue(worksheet, row, col) {
+    const cellAddress = xlsx.utils.encode_cell({ r: row, c: col });
+    const cell = worksheet[cellAddress];
     
-    // Informações gerais
-    texto += "📋 INFORMAÇÕES GERAIS\n";
-    texto += "• Sistema: Gerador de Etiquetas\n";
-    texto += `• Etiqueta: ${etiquetaNumero} de ${totalEtiquetas}\n`;
-    texto += `• Arquivo: ${spreadsheet.fileName}\n`;
-    texto += `• Data de geração: ${new Date().toLocaleDateString('pt-BR')}\n`;
-    texto += `• Hora de geração: ${new Date().toLocaleTimeString('pt-BR')}\n`;
-    
-    if (mode === 'single') {
-        texto += `• Modo: Linha específica (${rowIndex + 1})\n`;
-    } else {
-        texto += "• Modo: Todas as linhas\n";
+    if (!cell) {
+        return '';
     }
     
-    texto += "\n" + "=".repeat(40) + "\n";
-    texto += "📊 DADOS DA ETIQUETA\n";
-    texto += "=".repeat(40) + "\n\n";
+    let value = '';
     
-    // Adicionar todos os dados da linha
-    selectedColumns.forEach(col => {
-        const valor = rowData[col.name];
-        if (valor && valor.toString().trim() !== '') {
-            // Truncar valores muito longos para o QR Code
-            let valorExibicao = valor.toString();
-            if (valorExibicao.length > 50) {
-                valorExibicao = valorExibicao.substring(0, 47) + '...';
-            }
-            
-            texto += `• ${col.name}: ${valorExibicao}\n`;
-        }
-    });
-    
-    texto += "\n" + "=".repeat(40) + "\n";
-    texto += "📱 COMO USAR\n";
-    texto += "=".repeat(40) + "\n";
-    texto += "• Escaneie este QR Code para ver\n";
-    texto += "  as informações da etiqueta\n";
-    texto += "• Mantenha para referência futura\n";
-    texto += "• Compartilhe se necessário\n";
-    
-    texto += "\n" + "=".repeat(40) + "\n";
-    texto += "🔗 SISTEMA DE ETIQUETAS\n";
-    texto += `• Gerado em: ${new Date().toISOString()}\n`;
-    texto += "• Sistema 100% funcional\n";
-    texto += "=".repeat(40);
-    
-    return texto;
-}
-
-// ========== FUNÇÃO PARA GERAR QR CODE ==========
-async function gerarQRCodeParaEtiqueta(etiquetaNumero, totalEtiquetas, spreadsheet, rowData, selectedColumns, mode, rowIndex) {
-    try {
-        // Gerar texto formatado
-        const texto = gerarTextoQRCode(etiquetaNumero, totalEtiquetas, spreadsheet, rowData, selectedColumns, mode, rowIndex);
-        
-        // Gerar QR Code
-        const qrCodeDataURL = await QRCode.toDataURL(texto, {
-            width: 200,  // Maior para mais dados
-            margin: 2,
-            color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-            },
-            errorCorrectionLevel: 'H'  // Alta correção de erro
-        });
-        
-        return qrCodeDataURL;
-        
-    } catch (error) {
-        console.error('❌ Erro ao gerar QR Code:', error);
-        return null;
+    // Se a célula tem propriedade 'w' (valor formatado como string), usa esse
+    if (cell.w !== undefined) {
+        value = cell.w.toString().trim();
     }
-}
-
-// ========== FUNÇÃO PARA LER EXCEL ==========
-async function lerExcelCorretamente(filePath) {
-    console.log(`📖 Lendo Excel: ${filePath}`);
-    
-    try {
-        const workbook = xlsx.readFile(filePath, {
-            cellDates: false,
-            cellNF: true,
-            dateNF: 'dd"/"mm"/"yyyy',
-            raw: false,
-            cellText: true
-        });
-        
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        
-        const range = xlsx.utils.decode_range(worksheet['!ref']);
-        console.log(`📊 Planilha: ${range.e.r + 1} linhas × ${range.e.c + 1} colunas`);
-        
-        // Processar célula por célula
-        const data = [];
-        const headers = [];
-        
-        // 1. Ler cabeçalhos
-        for (let col = range.s.c; col <= range.e.c; col++) {
-            const cellAddress = xlsx.utils.encode_cell({ r: range.s.r, c: col });
-            const cell = worksheet[cellAddress];
-            
-            let headerName = cell ? (cell.w || String(cell.v || '')) : '';
-            headerName = headerName.trim();
-            
-            if (!headerName) {
-                headerName = `Coluna_${col + 1}`;
-            }
-            
-            headers.push({
-                index: col,
-                name: headerName,
-                format: cell ? cell.z : null
-            });
-        }
-        
-        console.log(`📋 ${headers.length} colunas identificadas`);
-        
-        // 2. Processar dados
-        for (let row = range.s.r + 1; row <= range.e.r; row++) {
-            const rowData = {};
-            let hasData = false;
-            
-            headers.forEach(header => {
-                const cellAddress = xlsx.utils.encode_cell({ r: row, c: header.index });
-                const cell = worksheet[cellAddress];
-                
-                let valorFinal = '';
-                
-                if (cell) {
-                    if (cell.w !== undefined && cell.w !== null) {
-                        valorFinal = formatarComoBrasileiro(cell.w, cell.z);
-                    } else if (cell.v !== undefined) {
-                        valorFinal = formatarComoBrasileiro(cell.v, cell.z);
-                    }
-                }
-                
-                rowData[header.name] = valorFinal;
-                
-                if (valorFinal && valorFinal.trim() !== '') {
-                    hasData = true;
-                }
-            });
-            
-            if (hasData) {
-                data.push(rowData);
-            }
-        }
-        
-        console.log(`✅ ${data.length} linhas processadas`);
-        
-        // Criar estrutura de colunas
-        const columns = headers.map((header, index) => {
-            // Encontrar sample value
-            let sampleValue = '';
-            for (let i = 0; i < Math.min(5, data.length); i++) {
-                const val = data[i][header.name];
-                if (val && val.trim() !== '') {
-                    sampleValue = val;
-                    break;
-                }
-            }
-            
-            if (!sampleValue) {
-                sampleValue = '(vazio)';
-            }
-            
-            const pareceData = sampleValue.match(/^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}/);
-            const temHora = sampleValue.includes(':');
-            
-            return {
-                id: `col_${index}`,
-                name: header.name,
-                index: index,
-                sampleValue: sampleValue,
-                format: header.format,
-                pareceData: pareceData,
-                temDataHora: pareceData && temHora
-            };
-        });
-        
-        return {
-            columns: columns,
-            data: data,
-            worksheet: worksheet,
-            rowCount: data.length,
-            columnCount: columns.length
-        };
-        
-    } catch (error) {
-        console.error('❌ Erro ao ler Excel:', error);
-        throw error;
+    // Se não tem 'w', usa o valor bruto 'v'
+    else if (cell.v !== undefined) {
+        value = cell.v.toString().trim();
     }
+    
+    // Se a célula é do tipo data (t = 'd') ou se parece com data
+    if (cell.t === 'd' || cell.t === 'n') {
+        // Verificar se o valor parece ser uma data
+        if (value.match(/^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}/)) {
+            // Converter para formato brasileiro
+            value = convertToBrazilianDate(value);
+        }
+    }
+    
+    return value;
 }
 
-// ========== ROTAS API ==========
+// ========== ROTAS DA API ==========
+
 app.get('/api/ping', (req, res) => {
+    res.json({ 
+        success: true, 
+        message: 'API Online 🚀', 
+        time: new Date().toISOString(),
+        dimensions: 'Etiquetas 120mm (altura) × 80mm (largura)'
+    });
+});
+
+app.get('/api/create-test', (req, res) => {
+    const testSheet = {
+        id: 'test_sheet_' + Date.now(),
+        fileName: 'planilha_teste.xlsx',
+        uploadDate: new Date().toISOString(),
+        columns: [
+            { id: 'col_0', name: 'Código', index: 0 },
+            { id: 'col_1', name: 'Produto', index: 1 },
+            { id: 'col_2', name: 'Quantidade', index: 2 },
+            { id: 'col_3', name: 'Data Fabricação', index: 3 },
+            { id: 'col_4', name: 'Data Vencimento', index: 4 },
+            { id: 'col_5', name: 'Hora Produção', index: 5 },
+            { id: 'col_6', name: 'Data+Hora Teste', index: 6 },
+            { id: 'col_7', name: 'Número Serial', index: 7 }
+        ],
+        data: [
+            { 
+                'Código': 'PROD-001',
+                'Produto': 'Caneta Azul', 
+                'Quantidade': '100',
+                'Data Fabricação': '15/03/2024',
+                'Data Vencimento': '15/06/2024',
+                'Hora Produção': '14:30',
+                'Data+Hora Teste': '15/03/2024 14:30',
+                'Número Serial': '45000'
+            },
+            { 
+                'Código': 'PROD-002',
+                'Produto': 'Caderno', 
+                'Quantidade': '50',
+                'Data Fabricação': '10/03/2024',
+                'Data Vencimento': '10/09/2024',
+                'Hora Produção': '09:15',
+                'Data+Hora Teste': '10/03/2024 09:15',
+                'Número Serial': '45001'
+            }
+        ],
+        rowCount: 2,
+        columnCount: 8
+    };
+
+    spreadsheets.push(testSheet);
+    
     res.json({
         success: true,
-        message: 'pong 🏓',
-        server: 'Etiquetas API - QR Code Informativo',
-        time: new Date().toISOString(),
-        spreadsheetsCount: spreadsheets.length
+        message: 'Dados de teste criados!',
+        spreadsheet: testSheet
+    });
+});
+
+app.get('/api/spreadsheets', (req, res) => {
+    const simplified = spreadsheets.map(sheet => ({
+        id: sheet.id,
+        fileName: sheet.fileName,
+        rowCount: sheet.rowCount,
+        columnCount: sheet.columnCount,
+        uploadDate: sheet.uploadDate
+    }));
+
+    res.json({
+        success: true,
+        spreadsheets: simplified,
+        total: simplified.length
+    });
+});
+
+app.get('/api/spreadsheet/:id', (req, res) => {
+    const { id } = req.params;
+    const spreadsheet = spreadsheets.find(s => s.id === id);
+
+    if (!spreadsheet) {
+        return res.status(404).json({
+            success: false,
+            error: 'Planilha não encontrada'
+        });
+    }
+
+    res.json({
+        success: true,
+        data: spreadsheet
     });
 });
 
@@ -358,154 +242,119 @@ app.post('/api/upload', upload.single('spreadsheet'), async (req, res) => {
                 error: 'Nenhum arquivo enviado'
             });
         }
-        
+
         console.log(`📤 Processando: ${req.file.originalname}`);
+
+        // Ler arquivo Excel
+        const workbook = xlsx.readFile(req.file.path);
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
         
-        const resultado = await lerExcelCorretamente(req.file.path);
+        // Determinar o range da planilha
+        const range = xlsx.utils.decode_range(worksheet['!ref']);
         
+        // Extrair cabeçalhos (primeira linha)
+        const headers = [];
+        for (let col = range.s.c; col <= range.e.c; col++) {
+            const cellValue = getExcelCellValue(worksheet, 0, col);
+            let colName;
+            
+            if (!cellValue || cellValue.trim() === '') {
+                colName = `Coluna_${col + 1}`;
+            } else {
+                colName = cellValue.trim();
+            }
+            
+            headers.push({
+                id: `col_${col}`,
+                name: colName,
+                index: col
+            });
+        }
+
+        // Processar dados linha por linha
+        const rows = [];
+        for (let row = 1; row <= range.e.r; row++) {
+            const rowData = {};
+            let rowHasData = false;
+            
+            headers.forEach((header, colIndex) => {
+                const cellValue = getExcelCellValue(worksheet, row, colIndex);
+                
+                if (cellValue && cellValue.trim() !== '') {
+                    rowHasData = true;
+                }
+                
+                // Armazenar o valor já convertido para formato brasileiro se for data
+                rowData[header.name] = cellValue;
+            });
+            
+            // Só adicionar se a linha tem dados
+            if (rowHasData) {
+                rows.push(rowData);
+            }
+        }
+
+        // Criar objeto da planilha
         const spreadsheet = {
-            id: `sheet_${Date.now()}`,
+            id: `sheet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             fileName: req.file.originalname,
             filePath: req.file.path,
             uploadDate: new Date().toISOString(),
-            columns: resultado.columns,
-            data: resultado.data,
-            rawWorksheet: resultado.worksheet,
-            rowCount: resultado.rowCount,
-            columnCount: resultado.columnCount
+            columns: headers,
+            data: rows,
+            rowCount: rows.length,
+            columnCount: headers.length
         };
-        
+
         spreadsheets.push(spreadsheet);
+
+        console.log(`✅ Planilha processada: ${rows.length} linhas, ${headers.length} colunas`);
         
+        // Debug: mostrar exemplos de datas processadas
+        if (rows.length > 0) {
+            console.log('📋 Exemplo de dados processados (primeira linha):');
+            const firstRowData = rows[0];
+            Object.keys(firstRowData).forEach(key => {
+                const value = firstRowData[key];
+                console.log(`   ${key}: "${value}"`);
+                
+                // Verificar se é data
+                if (value && value.match(/\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}/)) {
+                    console.log(`     ↑ FORMATO BRASILEIRO OK`);
+                }
+            });
+        }
+
         res.json({
             success: true,
-            message: `Planilha processada: ${resultado.rowCount} linhas, ${resultado.columnCount} colunas`,
+            message: `Planilha processada com sucesso! ${rows.length} linhas encontradas.`,
             spreadsheet: {
                 id: spreadsheet.id,
                 fileName: spreadsheet.fileName,
                 rowCount: spreadsheet.rowCount,
-                columnCount: spreadsheet.columnCount
+                columnCount: spreadsheet.columnCount,
+                uploadDate: spreadsheet.uploadDate
             }
         });
-        
+
     } catch (error) {
         console.error('❌ Erro no upload:', error);
+        
         if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }
+        
         res.status(500).json({
             success: false,
-            error: error.message
+            error: `Erro ao processar planilha: ${error.message}`
         });
     }
 });
 
-app.get('/api/spreadsheets', (req, res) => {
-    const simplifiedList = spreadsheets.map(sheet => ({
-        id: sheet.id,
-        fileName: sheet.fileName,
-        rowCount: sheet.rowCount,
-        columnCount: sheet.columnCount,
-        uploadDate: sheet.uploadDate
-    }));
-    
-    res.json({
-        success: true,
-        spreadsheets: simplifiedList,
-        total: simplifiedList.length
-    });
-});
-
-app.get('/api/spreadsheet/:id', (req, res) => {
-    const id = req.params.id;
-    const spreadsheet = spreadsheets.find(s => s.id === id);
-    
-    if (!spreadsheet) {
-        return res.status(404).json({
-            success: false,
-            error: 'Planilha não encontrada'
-        });
-    }
-    
-    res.json({
-        success: true,
-        data: {
-            id: spreadsheet.id,
-            fileName: spreadsheet.fileName,
-            rowCount: spreadsheet.rowCount,
-            columnCount: spreadsheet.columnCount,
-            columns: spreadsheet.columns,
-            data: spreadsheet.data.slice(0, 10),
-            primeiraLinha: spreadsheet.data[0]
-        }
-    });
-});
-
-app.delete('/api/spreadsheet/:id', (req, res) => {
-    const id = req.params.id;
-    const index = spreadsheets.findIndex(s => s.id === id);
-    
-    if (index === -1) {
-        return res.status(404).json({
-            success: false,
-            error: 'Planilha não encontrada'
-        });
-    }
-    
-    const spreadsheet = spreadsheets[index];
-    
-    if (fs.existsSync(spreadsheet.filePath)) {
-        fs.unlinkSync(spreadsheet.filePath);
-    }
-    
-    spreadsheets.splice(index, 1);
-    
-    res.json({
-        success: true,
-        message: 'Planilha excluída'
-    });
-});
-
-// ========== ROTA PARA TESTAR QR CODE ==========
-app.post('/api/test-qrcode', async (req, res) => {
-    try {
-        const { texto } = req.body;
-        
-        if (!texto) {
-            return res.status(400).json({
-                success: false,
-                error: 'Texto é obrigatório'
-            });
-        }
-        
-        const qrCodeDataURL = await QRCode.toDataURL(texto, {
-            width: 300,
-            margin: 2,
-            color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-            }
-        });
-        
-        res.json({
-            success: true,
-            qrCode: qrCodeDataURL,
-            texto: texto,
-            nota: 'QR Code gerado com sucesso'
-        });
-        
-    } catch (error) {
-        console.error('❌ Erro ao gerar QR Code de teste:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-// ========== GERAR ETIQUETAS COM QR CODE INFORMATIVO ==========
+// ========== GERAR PDF - DIMENSÕES CORRETAS ==========
 app.post('/api/generate', async (req, res) => {
-    console.log('🏷️ Gerando etiquetas com QR Code informativo...');
+    console.log('🏷️ Recebendo requisição para gerar PDF (120×80mm)...');
     
     try {
         const { 
@@ -515,14 +364,25 @@ app.post('/api/generate', async (req, res) => {
             rowIndex = 0,
             quantity = 1
         } = req.body;
-        
+
+        console.log('📦 Dados recebidos:', { spreadsheetId, columns, mode, rowIndex, quantity });
+
+        // Validações
         if (!spreadsheetId) {
             return res.status(400).json({
                 success: false,
                 error: 'ID da planilha é obrigatório'
             });
         }
-        
+
+        if (!columns || !Array.isArray(columns) || columns.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Selecione pelo menos uma coluna'
+            });
+        }
+
+        // Encontrar planilha
         const spreadsheet = spreadsheets.find(s => s.id === spreadsheetId);
         if (!spreadsheet) {
             return res.status(404).json({
@@ -530,25 +390,28 @@ app.post('/api/generate', async (req, res) => {
                 error: 'Planilha não encontrada'
             });
         }
-        
+
+        console.log(`✅ Planilha encontrada: ${spreadsheet.fileName}`);
+
+        // Filtrar colunas selecionadas
         const selectedColumns = spreadsheet.columns.filter(col => columns.includes(col.id));
         if (selectedColumns.length === 0) {
             return res.status(400).json({
                 success: false,
-                error: 'Selecione pelo menos uma coluna'
+                error: 'Nenhuma coluna válida selecionada'
             });
         }
-        
+
         console.log(`✅ ${selectedColumns.length} colunas selecionadas`);
-        
-        // Definir dados a serem processados
+
+        // Preparar dados
         let dataToProcess = [];
         let totalLabels = 0;
-        
+
         if (mode === 'all') {
             dataToProcess = spreadsheet.data;
             totalLabels = spreadsheet.rowCount;
-            console.log(`📊 Gerando ${totalLabels} etiquetas`);
+            console.log(`📊 Modo: TODAS AS LINHAS (${totalLabels} etiquetas)`);
         } else if (mode === 'single') {
             if (rowIndex < 0 || rowIndex >= spreadsheet.rowCount) {
                 return res.status(400).json({
@@ -556,263 +419,377 @@ app.post('/api/generate', async (req, res) => {
                     error: `Índice de linha inválido`
                 });
             }
-            
-            if (quantity < 1 || quantity > 1000) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Quantidade inválida'
-                });
-            }
-            
+
             const selectedRow = spreadsheet.data[rowIndex];
             for (let i = 0; i < quantity; i++) {
                 dataToProcess.push(selectedRow);
             }
             totalLabels = quantity;
-            console.log(`📊 Gerando ${quantity} etiquetas da linha ${rowIndex + 1}`);
+            console.log(`📊 Modo: LINHA ESPECÍFICA (${quantity} cópias da linha ${rowIndex + 1})`);
         }
-        
-        // ========== TAMANHO 120×80mm ==========
-        const MM_TO_POINTS = 2.834645669;
-        const PAGE_HEIGHT_MM = 120;
-        const PAGE_WIDTH_MM = 80;
-        
-        const PAGE_HEIGHT = Math.round(PAGE_HEIGHT_MM * MM_TO_POINTS);
-        const PAGE_WIDTH = Math.round(PAGE_WIDTH_MM * MM_TO_POINTS);
-        
-        // Tamanho do QR Code
-        const QR_SIZE = 45; // 40 pontos = ~14mm"
-        
-        // Criar PDF
+
+        // ========== CONFIGURAÇÃO DO PDF ==========
+        // 120mm ALTURA × 80mm LARGURA em pontos (1mm = 2.834645669 points)
+        const pageWidth = 80 * 2.834645669;   // Largura da etiqueta
+        const pageHeight = 120 * 2.834645669; // Altura da etiqueta
+
+        console.log(`📏 Dimensões da etiqueta:`);
+        console.log(`   - Altura: 120mm (${pageHeight.toFixed(2)} pontos)`);
+        console.log(`   - Largura: 80mm (${pageWidth.toFixed(2)} pontos)`);
+        console.log(`   - Total de etiquetas: ${dataToProcess.length}`);
+
+        // Criar documento PDF
         const doc = new PDFDocument({
-            size: [PAGE_WIDTH, PAGE_HEIGHT],
+            size: [pageWidth, pageHeight], // [largura, altura]
+            margin: 0,
+            autoFirstPage: false,
+            bufferPages: true
+        });
+
+        // Configurar headers da resposta
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:]/g, '-');
+        const fileName = mode === 'all' 
+            ? `etiquetas_120x80_${timestamp}.pdf`
+            : `etiqueta_linha${rowIndex + 1}_${timestamp}.pdf`;
+
+        // Configurar headers importantes
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+
+        console.log(`📄 Configurando download: ${fileName}`);
+
+        // Pipe do PDF para a resposta
+        doc.pipe(res);
+
+        // ========== GERAR ETIQUETAS ==========
+        let labelCount = 0;
+
+        for (let i = 0; i < dataToProcess.length; i++) {
+            const rowData = dataToProcess[i];
+            
+            // Verificar se há dados
+            const hasData = selectedColumns.some(col => {
+                const value = rowData[col.name];
+                return value && value.toString().trim() !== '';
+            });
+
+            if (!hasData) {
+                continue;
+            }
+
+            // Nova página para cada etiqueta
+            doc.addPage({
+                size: [pageWidth, pageHeight],
+                margins: { top: 0, bottom: 0, left: 0, right: 0 }
+            });
+
+            labelCount++;
+
+            // ========== CABEÇALHO REDUZIDO ==========
+            const headerHeight = 16; // Aumentado de 14 para 16
+            doc.rect(0, 0, pageWidth, headerHeight)
+               .fill('#4f46e5');
+            
+            // Número da etiqueta - FONTE MAIOR
+            doc.fontSize(10) // Aumentado de 8 para 10
+               .fillColor('white')
+               .font('Helvetica-Bold')
+               .text(`ETIQUETA ${labelCount}/${totalLabels}`, 10, 4); // Ajustado posição Y
+
+            // ========== CONTEÚDO PRINCIPAL - UMA ÚNICA COLUNA ==========
+            const contentStartY = headerHeight + 10; // Aumentado espaçamento
+            const contentWidth = pageWidth - 20;
+            
+            // Calcular altura dos itens baseado no número de colunas
+            const totalItems = selectedColumns.length;
+            const availableHeight = pageHeight - contentStartY - 50; // Reduzido espaço para QR maior
+            const itemHeight = Math.min(20, availableHeight / totalItems); // Aumentado de 16 para 20
+            
+            const cardHeight = itemHeight;
+            const cardSpacing = 5; // Aumentado de 4 para 5
+            
+            let currentY = contentStartY;
+            
+            // Ajustar tamanho da fonte baseado no número de colunas - FONTES MAIORES
+            let fontSize = 9; // Aumentado de 7 para 9
+            let labelFontSize = 7; // Aumentado de 5 para 7
+            
+            if (totalItems > 8) {
+                fontSize = 8; // Aumentado de 6 para 8
+                labelFontSize = 6; // Aumentado de 4 para 6
+            }
+            if (totalItems > 12) {
+                fontSize = 7; // Aumentado de 5 para 7
+                labelFontSize = 5; // Aumentado de 3 para 5
+            }
+
+            console.log(`📝 Configuração fonte: Label=${labelFontSize}px, Valor=${fontSize}px, Altura item=${cardHeight}px`);
+
+            for (let colIndex = 0; colIndex < selectedColumns.length; colIndex++) {
+                const col = selectedColumns[colIndex];
+                const value = rowData[col.name] || '';
+                
+                if (value.toString().trim() === '') continue;
+                
+                // Verificar se ainda cabe na etiqueta (deixar espaço para QR Code maior)
+                if (currentY + cardHeight > pageHeight - 55) { // Ajustado para QR maior
+                    console.log(`⚠️ Etiqueta ${labelCount}: Apenas ${colIndex} de ${selectedColumns.length} colunas couberam`);
+                    break;
+                }
+
+                // Cartão de informação - LARGURA TOTAL
+                doc.roundedRect(10, currentY, contentWidth, cardHeight, 3) // Raio aumentado
+                   .fill('#f8fafc')
+                   .stroke('#e2e8f0')
+                   .stroke();
+
+                // Nome da coluna (em cima) - FONTE MAIOR
+                doc.fontSize(labelFontSize)
+                   .fillColor('#64748b')
+                   .font('Helvetica')
+                   .text(col.name.toUpperCase(), 
+                         12, 
+                         currentY + 3, // Ajustado posição
+                         { 
+                             width: contentWidth - 4,
+                             ellipsis: true 
+                         });
+
+                // Valor (embaixo) - FONTE MAIOR
+                let displayValue = String(value);
+                
+                // Calcular comprimento máximo baseado no espaço (com fonte maior)
+                const maxChars = Math.floor(contentWidth / (fontSize * 0.5)); // Ajustado cálculo
+                if (displayValue.length > maxChars) {
+                    displayValue = displayValue.substring(0, maxChars - 3) + '...';
+                }
+
+                doc.fontSize(fontSize)
+                   .fillColor('#1e293b')
+                   .font('Helvetica-Bold')
+                   .text(displayValue, 
+                         12, 
+                         currentY + (cardHeight / 1.5), // Ajustado posição vertical
+                         { 
+                             width: contentWidth - 4,
+                             ellipsis: true 
+                         });
+
+                // Atualizar posição
+                currentY += cardHeight + cardSpacing;
+            }
+
+            // ========== QR CODE MAIOR ==========
+            try {
+                // Texto compacto para o QR Code
+                const qrText = `ETQ${labelCount}/${totalLabels}\n${new Date().toLocaleDateString('pt-BR')}`;
+                
+                const qrCode = await QRCode.toBuffer(qrText, {
+                    width: 120, // Aumentado de 100 para 120
+                    margin: 1,
+                    color: { 
+                        dark: '#000000', 
+                        light: '#FFFFFF' 
+                    },
+                    errorCorrectionLevel: 'M'
+                });
+
+                const qrSize = 35; // AUMENTADO de 25 para 35 (40% maior)
+                const qrX = pageWidth - qrSize - 15; // Ajustado margem
+                const qrY = pageHeight - qrSize - 15; // Ajustado margem
+                
+                // Adicionar QR Code
+                doc.image(qrCode, qrX, qrY, {
+                    width: qrSize,
+                    height: qrSize
+                });
+                
+                // Borda do QR Code
+                doc.rect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4) // Borda mais grossa
+                   .stroke('#4f46e5')
+                   .lineWidth(0.8); // Linha mais grossa
+                
+                // Legenda com fonte maior
+                doc.fontSize(6) // Aumentado de 4 para 6
+                   .fillColor('#4f46e5')
+                   .font('Helvetica-Bold')
+                   .text('QR CODE', 
+                         qrX, 
+                         qrY + qrSize + 2, // Ajustado posição
+                         { 
+                             width: qrSize, 
+                             align: 'center' 
+                         });
+                
+                console.log(`✅ QR Code maior adicionado (${qrSize}px)`);
+                
+            } catch (qrError) {
+                console.log(`⚠️ QR Code não gerado: ${qrError.message}`);
+            }
+
+            // ========== RODAPÉ COMPACTO ==========
+            // Nome do arquivo truncado
+            const shortFileName = spreadsheet.fileName.length > 25 
+                ? spreadsheet.fileName.substring(0, 22) + '...' 
+                : spreadsheet.fileName;
+            
+            doc.fontSize(6) // Aumentado de 5 para 6
+               .fillColor('#64748b')
+               .text(shortFileName, 
+                     10, 
+                     pageHeight - 15, // Ajustado posição
+                     { 
+                         width: pageWidth - 90, // Ajustado largura
+                         ellipsis: true 
+                     });
+
+            // Data compacta com fonte maior
+            doc.fontSize(6) // Aumentado de 5 para 6
+               .fillColor('#64748b')
+               .text(new Date().toLocaleDateString('pt-BR'), 
+                     pageWidth - 80, // Ajustado posição
+                     pageHeight - 15, // Ajustado posição
+                     { 
+                         width: 70, // Ajustado largura
+                         align: 'right' 
+                     });
+
+            // Linha divisória
+            doc.moveTo(10, pageHeight - 18) // Ajustado posição
+               .lineTo(pageWidth - 10, pageHeight - 18)
+               .stroke('#e2e8f0')
+               .lineWidth(0.5);
+        }
+
+        // Se nenhuma etiqueta foi gerada
+        if (labelCount === 0) {
+            doc.addPage({
+                size: [pageWidth, pageHeight],
+                margins: { top: 0, bottom: 0, left: 0, right: 0 }
+            });
+            
+            doc.fontSize(14) // Aumentado
+               .fillColor('#64748b')
+               .text('Nenhum dado encontrado', 
+                     pageWidth / 2, 
+                     pageHeight / 2 - 20,
+                     { align: 'center' });
+            
+            doc.fontSize(12) // Aumentado
+               .fillColor('#94a3b8')
+               .text('Verifique as colunas selecionadas', 
+                     pageWidth / 2, 
+                     pageHeight / 2,
+                     { align: 'center' });
+        }
+
+        // Finalizar PDF
+        doc.end();
+
+        console.log(`✅ PDF gerado com sucesso: ${labelCount} etiquetas 120×80mm`);
+        console.log(`📤 Arquivo: ${fileName}`);
+
+    } catch (error) {
+        console.error('❌ Erro ao gerar PDF:', error);
+        
+        // Se ainda não enviou headers, enviar erro JSON
+        if (!res.headersSent) {
+            res.status(500).json({
+                success: false,
+                error: `Erro ao gerar PDF: ${error.message}`
+            });
+        } else {
+            console.error('⚠️ Não foi possível enviar erro: resposta já iniciada');
+        }
+    }
+});
+
+// ========== TESTE DE PDF COM DIMENSÕES CORRETAS ==========
+app.get('/api/test-pdf', async (req, res) => {
+    try {
+        console.log('🧪 Gerando PDF de teste 120×80mm...');
+        
+        // Dimensões corretas: 120mm altura × 80mm largura
+        const pageWidth = 80 * 2.834645669;   // Largura
+        const pageHeight = 120 * 2.834645669; // Altura
+        
+        const doc = new PDFDocument({
+            size: [pageWidth, pageHeight],
             margin: 0,
             autoFirstPage: false
         });
         
-        let fileName;
-        if (mode === 'all') {
-            fileName = `etiquetas_${spreadsheet.fileName.replace(/\.[^/.]+$/, "")}_${Date.now()}.pdf`;
-        } else {
-            fileName = `etiquetas_linha${rowIndex + 1}_x${quantity}_${Date.now()}.pdf`;
-        }
-        
+        // Headers CORRETOS para PDF
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Disposition', 'attachment; filename="etiqueta_teste_120x80.pdf"');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         
         doc.pipe(res);
         
-        // Configurar fontes
-        doc.registerFont('Helvetica', 'Helvetica');
-        doc.registerFont('Helvetica-Bold', 'Helvetica-Bold');
+        // Adicionar página
+        doc.addPage({
+            size: [pageWidth, pageHeight],
+            margins: { top: 0, bottom: 0, left: 0, right: 0 }
+        });
         
-        // ========== GERAR ETIQUETAS ==========
-        let etiquetasGeradas = 0;
+        // Cabeçalho
+        doc.rect(0, 0, pageWidth, 20)
+           .fill('#4f46e5');
         
-        for (let index = 0; index < dataToProcess.length; index++) {
-            const rowData = dataToProcess[index];
-            
-            // Verificar se tem dados reais
-            const temDadosReais = selectedColumns.some(col => {
-                const valor = rowData[col.name];
-                return valor && valor.toString().trim() !== '';
+        doc.fontSize(12)
+           .fillColor('white')
+           .font('Helvetica-Bold')
+           .text('ETIQUETA DE TESTE', 15, 5);
+        
+        // Conteúdo principal
+        doc.fontSize(10)
+           .fillColor('#1e293b')
+           .text('Sistema de Etiquetas', 15, 35);
+        
+        doc.fontSize(9)
+           .fillColor('#64748b')
+           .text('Dimensões: 120mm × 80mm', 15, 55);
+        
+        doc.fontSize(9)
+           .fillColor('#10b981')
+           .text('✅ PDF gerado com sucesso!', 15, 75);
+        
+        // QR Code de teste MAIOR
+        try {
+            const qrText = 'ETIQUETA DE TESTE\nDimensões: 120×80mm\nData: ' + new Date().toLocaleDateString('pt-BR');
+            const qrCode = await QRCode.toBuffer(qrText, {
+                width: 150,
+                margin: 1
             });
             
-            if (!temDadosReais) {
-                console.log(`⚠️ Linha ${index + 1} sem dados, pulando etiqueta`);
-                continue;
-            }
-            
-            // ADICIONAR PÁGINA
-            doc.addPage({
-                size: [PAGE_WIDTH, PAGE_HEIGHT],
-                margins: { top: 0, bottom: 0, left: 0, right: 0 }
+            doc.image(qrCode, pageWidth - 60, pageHeight - 60, { // Posição ajustada
+                width: 50, // Aumentado de 40 para 50
+                height: 50
             });
             
-            etiquetasGeradas++;
-            
-            // Cabeçalho da etiqueta
-            const headerHeight = 25;
-            doc.rect(0, 0, PAGE_WIDTH, headerHeight)
-               .fill('#4f46e5');
-            
-            if (mode === 'all') {
-                doc.fontSize(12)
-                   .fillColor('white')
-                   .font('Helvetica-Bold')
-                   .text(`ETIQUETA ${etiquetasGeradas}`, 15, 8);
-                
-                doc.fontSize(10)
-                   .fillColor('rgba(255, 255, 255, 0.8)')
-                   .text(`${etiquetasGeradas}/${totalLabels}`, PAGE_WIDTH - 60, 10, { align: 'right' });
-            } else {
-                doc.fontSize(12)
-                   .fillColor('white')
-                   .font('Helvetica-Bold')
-                   .text(`ETIQUETA ${etiquetasGeradas}`, 15, 8);
-                
-                doc.fontSize(10)
-                   .fillColor('rgba(255, 255, 255, 0.8)')
-                   .text(`Cópia ${etiquetasGeradas}/${quantity}`, PAGE_WIDTH - 80, 10, { align: 'right' });
-            }
-            
-            // Área de conteúdo
-            const CONTENT_START_Y = headerHeight + 15;
-            
-            // Filtrar colunas com dados
-            const columnsWithData = selectedColumns.filter(col => {
-                const value = rowData[col.name];
-                return value && value.toString().trim() !== '';
-            });
-            
-            // Layout das colunas
-            const COLUMN_COUNT = 2;
-            const COLUMN_WIDTH = (PAGE_WIDTH - 40) / COLUMN_COUNT;
-            const CARD_HEIGHT = 38;
-            const CARD_SPACING = 8;
-            
-            let columnData = [[], []];
-            
-            // Distribuir colunas
-            columnsWithData.forEach((col, colIndex) => {
-                const columnIdx = colIndex % COLUMN_COUNT;
-                columnData[columnIdx].push(col);
-            });
-            
-            // Desenhar colunas
-            for (let colIndex = 0; colIndex < COLUMN_COUNT; colIndex++) {
-                const currentX = 15 + (colIndex * (COLUMN_WIDTH + 10));
-                let currentY = CONTENT_START_Y;
-                
-                // Processar cartões
-                columnData[colIndex].forEach((col, cardIndex) => {
-                    if (currentY + CARD_HEIGHT > PAGE_HEIGHT - 60) return;
-                    
-                    const cellValue = rowData[col.name];
-                    if (!cellValue || cellValue.toString().trim() === '') return;
-                    
-                    // Criar cartão
-                    doc.roundedRect(currentX, currentY, COLUMN_WIDTH - 5, CARD_HEIGHT, 5)
-                       .fill('#f8fafc')
-                       .stroke('#e2e8f0')
-                       .stroke();
-                    
-                    // Nome da coluna
-                    doc.fontSize(7)
-                       .fillColor('#64748b')
-                       .font('Helvetica')
-                       .text(col.name.toUpperCase(), 
-                             currentX + 6, 
-                             currentY + 6, 
-                             { width: COLUMN_WIDTH - 15 });
-                    
-                    // Valor
-                    let valueText = String(cellValue);
-                    
-                    if (valueText.length > 25 && !col.temDataHora) {
-                        valueText = valueText.substring(0, 22) + '...';
-                    }
-                    
-                    doc.fontSize(col.temDataHora ? 8 : 9)
-                       .fillColor('#1e293b')
-                       .font('Helvetica-Bold')
-                       .text(valueText, 
-                             currentX + 6, 
-                             currentY + (col.temDataHora ? 18 : 20),
-                             { width: COLUMN_WIDTH - 15, ellipsis: true });
-                    
-                    currentY += CARD_HEIGHT + CARD_SPACING;
-                });
-            }
-            
-            // 🔥 GERAR QR CODE COM INFORMAÇÕES COMPLETAS
-            try {
-                const qrCodeDataURL = await gerarQRCodeParaEtiqueta(
-                    etiquetasGeradas,
-                    totalLabels,
-                    spreadsheet,
-                    rowData,
-                    selectedColumns,
-                    mode,
-                    rowIndex
-                );
-                
-                if (qrCodeDataURL) {
-                    // Posicionar no canto inferior direito
-                    const qrX = PAGE_WIDTH - QR_SIZE - 15;
-                    const qrY = PAGE_HEIGHT - QR_SIZE - 15;
-                    
-                    // Adicionar QR Code ao PDF
-                    doc.image(qrCodeDataURL, qrX, qrY, {
-                        width: QR_SIZE,
-                        height: QR_SIZE
-                    });
-                    
-                    // Adicionar borda e legenda
-                    doc.rect(qrX - 2, qrY - 2, QR_SIZE + 4, QR_SIZE + 4)
-                       .stroke('#4f46e5')
-                       .lineWidth(0.5);
-                    
-                    // Texto abaixo do QR Code
-                    doc.fontSize(5)
-                       .fillColor('#4f46e5')
-                       .text('Escanear para ver dados', 
-                             qrX, 
-                             qrY + QR_SIZE + 2,
-                             { width: QR_SIZE, align: 'center' });
-                    
-                    console.log(`✅ QR Code informativo adicionado na etiqueta ${etiquetasGeradas}`);
-                }
-            } catch (qrError) {
-                console.error(`❌ Erro no QR Code: ${qrError.message}`);
-                // Desenhar placeholder em caso de erro
-                const qrX = PAGE_WIDTH - QR_SIZE - 15;
-                const qrY = PAGE_HEIGHT - QR_SIZE - 15;
-                
-                doc.rect(qrX, qrY, QR_SIZE, QR_SIZE)
-                   .fill('#f8fafc')
-                   .stroke('#e2e8f0')
-                   .stroke();
-                
-                doc.fontSize(6)
-                   .fillColor('#94a3b8')
-                   .text('QR Code\nindisponível', 
-                         qrX + 5, 
-                         qrY + QR_SIZE/2 - 6,
-                         { width: QR_SIZE - 10, align: 'center' });
-            }
-            
-            // Rodapé
-            doc.fontSize(6)
-               .fillColor('#94a3b8')
-               .text(`${spreadsheet.fileName}`, 
-                     15, 
-                     PAGE_HEIGHT - 25,
-                     { width: PAGE_WIDTH - (QR_SIZE + 40), align: 'left' });
+        } catch (qrError) {
+            console.log('QR Code não gerado no teste:', qrError.message);
         }
         
-        // Se nenhuma etiqueta foi gerada
-        if (etiquetasGeradas === 0) {
-            doc.addPage({
-                size: [PAGE_WIDTH, PAGE_HEIGHT],
-                margins: { top: 0, bottom: 0, left: 0, right: 0 }
-            });
-            
-            doc.fontSize(14)
-               .fillColor('#64748b')
-               .text('Nenhum dado encontrado', 
-                     30, 
-                     PAGE_HEIGHT / 2 - 20,
-                     { align: 'center' });
-        }
+        // Rodapé
+        doc.fontSize(8) // Aumentado
+           .fillColor('#94a3b8')
+           .text(`Teste - ${new Date().toLocaleDateString('pt-BR')}`, 
+                 15, 
+                 pageHeight - 20);
         
         doc.end();
         
-        console.log(`✅ PDF gerado: ${fileName}`);
-        console.log(`✅ ${etiquetasGeradas} etiquetas com QR Code informativo`);
+        console.log('✅ PDF de teste 120×80mm gerado com sucesso');
         
     } catch (error) {
-        console.error('❌ Erro ao gerar PDF:', error);
+        console.error('❌ Erro no PDF de teste:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -820,37 +797,67 @@ app.post('/api/generate', async (req, res) => {
     }
 });
 
-// ========== ROTAS PÁGINAS ==========
+// ========== ROTAS DO FRONTEND ==========
 app.get('/', (req, res) => {
-    res.sendFile(path.join(frontendPath, 'index.html'));
+    const indexPath = path.join(frontendPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Sistema de Etiquetas 120×80mm</title>
+                <style>
+                    body { font-family: Arial; padding: 50px; text-align: center; }
+                    .btn { display: inline-block; padding: 12px 24px; margin: 10px; background: #4f46e5; color: white; text-decoration: none; border-radius: 8px; }
+                    .dimensions { background: #f0f9ff; padding: 10px; border-radius: 8px; margin: 20px; display: inline-block; }
+                </style>
+            </head>
+            <body>
+                <h1>🏷️ Sistema de Etiquetas</h1>
+                <div class="dimensions">
+                    <strong>📏 Dimensões:</strong> 120mm (altura) × 80mm (largura)
+                </div>
+                <p>Backend funcionando!</p>
+                <a href="/api/ping" class="btn">Testar API</a>
+                <a href="/api/create-test" class="btn">Criar Dados Teste</a>
+                <a href="/api/test-pdf" class="btn">Testar PDF 120×80mm</a>
+                <a href="/upload" class="btn">Upload</a>
+                <a href="/generate" class="btn">Gerar Etiquetas</a>
+            </body>
+            </html>
+        `);
+    }
 });
 
 app.get('/upload', (req, res) => {
-    res.sendFile(path.join(frontendPath, 'upload.html'));
+    const uploadPath = path.join(frontendPath, 'upload.html');
+    if (fs.existsSync(uploadPath)) {
+        res.sendFile(uploadPath);
+    } else {
+        res.redirect('/');
+    }
 });
 
 app.get('/generate', (req, res) => {
-    res.sendFile(path.join(frontendPath, 'generate.html'));
+    const generatePath = path.join(frontendPath, 'generate.html');
+    if (fs.existsSync(generatePath)) {
+        res.sendFile(generatePath);
+    } else {
+        res.redirect('/');
+    }
 });
 
-// ========== INICIAR ==========
+// ========== INICIAR SERVIDOR ==========
 app.listen(PORT, () => {
-    console.log('='.repeat(70));
-    console.log(`🚀 SISTEMA DE ETIQUETAS - QR CODE INFORMATIVO`);
-    console.log('='.repeat(70));
-    console.log(`✅ Backend: http://localhost:${PORT}`);
+    console.log('\n' + '='.repeat(60));
+    console.log('🚀 SISTEMA DE ETIQUETAS 120×80mm - INICIADO');
+    console.log('='.repeat(60));
+    console.log(`✅ Servidor: http://localhost:${PORT}`);
+    console.log(`✅ Dimensões: 120mm altura × 80mm largura`);
+    console.log(`✅ Teste PDF: http://localhost:${PORT}/api/test-pdf`);
     console.log(`✅ Upload: http://localhost:${PORT}/upload`);
     console.log(`✅ Gerar: http://localhost:${PORT}/generate`);
-    console.log('='.repeat(70));
-    console.log('🔥 QR CODE MELHORADO:');
-    console.log('• Ao escanear, mostra TODOS os dados da etiqueta');
-    console.log('• Formatação organizada e legível');
-    console.log('• Inclui informações do sistema');
-    console.log('• Inclui data/hora de geração');
-    console.log('• Inclui modo de operação');
-    console.log('='.repeat(70));
-    console.log('📱 TESTAR QR CODE:');
-    console.log('POST http://localhost:3001/api/test-qrcode');
-    console.log('Body: {"texto": "Conteúdo do QR Code"}');
-    console.log('='.repeat(70));
+    console.log('='.repeat(60));
 });

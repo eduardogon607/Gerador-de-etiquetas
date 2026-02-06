@@ -2,1048 +2,462 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gerar Etiquetas 120×80mm - Com Multiplas Opções</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar Etiquetas 120×80mm</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
-            color: #1e293b;
+            color: #333;
         }
-        .container { 
-            max-width: 1200px; 
+
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 20px;
         }
-        .header { 
-            text-align: center; 
-            margin-bottom: 40px; 
-            padding-bottom: 25px; 
-            border-bottom: 3px solid #4f46e5;
-            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-            color: white;
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px 20px 0 0;
             padding: 30px;
-            margin: -30px -30px 40px -30px;
-            border-radius: 16px 16px 0 0;
+            text-align: center;
         }
-        .header h1 { 
-            font-size: 2.2em;
+
+        h1 {
+            font-size: 2.5rem;
+            color: #4f46e5;
             margin-bottom: 10px;
-            font-weight: 700;
         }
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-            margin-bottom: 20px;
-        }
-        .features {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        .feature-badge {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 8px 18px;
+
+        .dimensions-badge {
+            display: inline-block;
+            background: #f0f9ff;
+            padding: 8px 16px;
             border-radius: 20px;
-            font-size: 0.9em;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .steps-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-        }
-        .step {
-            flex: 1;
-            min-width: 200px;
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 12px;
-            border: 2px solid #e2e8f0;
-            transition: all 0.3s;
-        }
-        .step.active {
-            border-color: #4f46e5;
-            background: #e0e7ff;
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.15);
-        }
-        .step-number {
-            width: 32px;
-            height: 32px;
-            background: #4f46e5;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: #0ea5e9;
             font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 1.1em;
+            margin: 10px 0;
+            border: 2px solid #0ea5e9;
         }
-        .step h3 {
-            margin-bottom: 8px;
-            color: #1e293b;
-        }
-        .step p {
-            color: #64748b;
-            font-size: 0.9em;
-            line-height: 1.4;
-        }
-        .section {
-            margin-bottom: 30px;
-            padding: 25px;
-            border-radius: 12px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-        }
-        .section h2 {
-            color: #1e293b;
-            margin-bottom: 20px;
-            font-size: 1.4em;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        #spreadsheets {
-            min-height: 120px;
-        }
-        .spreadsheet-list {
-            display: grid;
-            gap: 12px;
-        }
-        .spreadsheet-item {
-            padding: 20px;
+
+        .main-content {
             background: white;
+            border-radius: 0 0 20px 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .step {
+            margin-bottom: 40px;
+            padding: 20px;
             border: 2px solid #e2e8f0;
             border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sheet-list {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .sheet-item {
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
-        .spreadsheet-item:hover {
+
+        .sheet-item:hover {
             border-color: #4f46e5;
-            background: #f0f4ff;
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
         }
-        .spreadsheet-item.selected {
+
+        .sheet-item.selected {
             border-color: #4f46e5;
             background: #e0e7ff;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
-        .spreadsheet-info {
-            flex: 1;
-        }
-        .spreadsheet-name {
-            font-weight: 600;
-            font-size: 1.1em;
-            color: #1e293b;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .spreadsheet-meta {
-            color: #64748b;
-            font-size: 0.9em;
-        }
-        .delete-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 500;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .delete-btn:hover {
-            background: #dc2626;
-            transform: scale(1.05);
-        }
-        .columns-container {
+
+        .columns-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
-            margin: 20px 0;
+            margin-top: 20px;
         }
+
         .column-item {
-            padding: 18px;
-            background: white;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
             border: 2px solid #e2e8f0;
-            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
+
         .column-item:hover {
             border-color: #4f46e5;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
         }
+
         .column-item.selected {
-            background: #4f46e5;
-            color: white;
+            background: #e0e7ff;
             border-color: #4f46e5;
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.25);
         }
+
         .column-check {
             width: 20px;
             height: 20px;
-            border: 2px solid #cbd5e1;
             border-radius: 4px;
+            border: 2px solid #cbd5e1;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        .column-item.selected .column-check {
-            background: white;
-            border-color: white;
-            color: #4f46e5;
-        }
-        .column-name {
-            font-weight: 500;
-            font-size: 1em;
-        }
-        .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #4f46e5, #4338ca);
             color: white;
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+            font-size: 12px;
         }
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
-        }
-        .btn-secondary {
-            background: white;
-            color: #475569;
-            border: 2px solid #e2e8f0;
-        }
-        .btn-secondary:hover {
-            background: #f1f5f9;
+
+        .column-item.selected .column-check {
+            background: #4f46e5;
             border-color: #4f46e5;
         }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #4338ca;
+            transform: translateY(-2px);
+        }
+
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none !important;
-            box-shadow: none !important;
         }
-        .message {
-            padding: 16px;
-            margin: 20px 0;
-            border-radius: 10px;
-            animation: slideIn 0.3s;
-            border-left: 4px solid;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .message.success { 
-            background: #f0fdf4; 
-            color: #166534; 
-            border-left-color: #22c55e; 
-        }
-        .message.error { 
-            background: #fef2f2; 
-            color: #991b1b; 
-            border-left-color: #ef4444; 
-        }
-        .message.info { 
-            background: #eff6ff; 
-            color: #1e40af; 
-            border-left-color: #3b82f6; 
-        }
-        .actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-            flex-wrap: wrap;
-        }
-        .info-panel {
-            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-            padding: 25px;
-            border-radius: 12px;
-            margin: 25px 0;
-            border-left: 5px solid #4f46e5;
-        }
-        .info-panel h3 {
-            color: #1e293b;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-        }
-        .info-panel ul {
-            margin: 15px 0 0 20px;
+
+        .btn-secondary {
+            background: #f1f5f9;
             color: #475569;
         }
-        .info-panel li {
-            margin-bottom: 8px;
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e2e8f0;
         }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
+
+        .btn-success {
+            background: #10b981;
         }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+
+        .btn-success:hover:not(:disabled) {
+            background: #0da271;
         }
-        .nav-tabs {
-            display: flex;
-            gap: 5px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 5px;
-            margin-top: 25px;
-            overflow-x: auto;
-        }
-        .nav-tab {
-            padding: 12px 24px;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-        .nav-tab:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        .nav-tab.active {
-            background: white;
-            color: #4f46e5;
-            font-weight: 600;
-        }
-        
-        /* NOVOS ESTILOS PARA SELEÇÃO DE LINHA */
-        .mode-selector {
-            display: flex;
-            gap: 15px;
-            margin: 20px 0;
-            padding: 15px;
-            background: white;
-            border-radius: 10px;
-            border: 2px solid #e2e8f0;
-        }
-        .mode-option {
-            flex: 1;
-            padding: 20px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid #e2e8f0;
-        }
-        .mode-option:hover {
-            border-color: #4f46e5;
-            background: #f0f4ff;
-        }
-        .mode-option.selected {
-            border-color: #4f46e5;
-            background: #e0e7ff;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-        .mode-icon {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-        .mode-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #1e293b;
-        }
-        .mode-description {
-            color: #64748b;
-            font-size: 0.9em;
-        }
-        
-        .row-selection {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #e2e8f0;
-            margin: 20px 0;
-        }
-        .row-selector {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-            margin: 15px 0;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-        }
-        .row-option {
-            padding: 12px;
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        .row-option:hover {
-            border-color: #4f46e5;
-            background: #f0f4ff;
-        }
-        .row-option.selected {
-            border-color: #4f46e5;
-            background: #e0e7ff;
-            font-weight: 600;
-        }
-        .row-preview {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border: 1px solid #e2e8f0;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        .quantity-selector {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 20px 0;
-            padding: 20px;
-            background: #f8fafc;
-            border-radius: 10px;
-        }
-        .quantity-input {
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            width: 120px;
-            text-align: center;
-        }
-        .quantity-input:focus {
-            outline: none;
-            border-color: #4f46e5;
-        }
-        .quantity-buttons {
-            display: flex;
-            gap: 5px;
-        }
-        .qty-btn {
-            padding: 8px 12px;
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .qty-btn:hover {
-            background: #f1f5f9;
-            border-color: #4f46e5;
-        }
-        
-        .summary-box {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #e2e8f0;
-            margin: 20px 0;
-        }
-        .summary-item {
+
+        .navigation {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #e2e8f0;
+            margin-top: 30px;
         }
-        .summary-item:last-child {
-            border-bottom: none;
+
+        .messages {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
         }
-        .summary-label {
-            color: #64748b;
+
+        .message.info {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            color: #1e40af;
         }
-        .summary-value {
-            font-weight: 600;
-            color: #1e293b;
+
+        .message.error {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
         }
-        
-        /* ========== RESPONSIVIDADE ========== */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            
-            .container {
-                padding: 15px;
-                border-radius: 12px;
-            }
-            
-            .header {
-                padding: 20px 15px;
-                margin: -15px -15px 30px -15px;
-                border-radius: 12px 12px 0 0;
-            }
-            
-            .header h1 {
-                font-size: 1.6em;
-            }
-            
-            .header p {
-                font-size: 1em;
-            }
-            
-            .feature-badge {
-                padding: 6px 12px;
-                font-size: 0.8em;
-            }
-            
-            .steps-container {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .step {
-                min-width: 100%;
-                padding: 15px;
-            }
-            
-            .section {
-                padding: 20px 15px;
-                margin-bottom: 20px;
-            }
-            
-            .section h2 {
-                font-size: 1.2em;
-                gap: 8px;
-            }
-            
-            .spreadsheet-item {
-                padding: 15px;
-                flex-direction: column;
-                align-items: stretch;
-                gap: 15px;
-            }
-            
-            .spreadsheet-info {
-                width: 100%;
-            }
-            
-            .delete-btn {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .columns-container {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-            
-            .column-item {
-                padding: 15px;
-            }
-            
-            .btn {
-                padding: 12px 20px;
-                font-size: 15px;
-                width: 100%;
-                min-height: 50px;
-            }
-            
-            .actions {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .info-panel {
-                padding: 20px;
-            }
-            
-            .mode-selector {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .mode-option {
-                padding: 15px;
-            }
-            
-            .row-selector {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
-            
-            .quantity-selector {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 15px;
-                padding: 15px;
-            }
-            
-            .quantity-buttons {
-                justify-content: center;
-            }
-            
-            .quantity-input {
-                width: 100px;
-                font-size: 15px;
-            }
-            
-            .qty-btn {
-                padding: 10px 15px;
-                min-width: 50px;
-            }
-            
-            .nav-tabs {
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                padding: 4px;
-            }
-            
-            .nav-tab {
-                padding: 10px 15px;
-                font-size: 0.9em;
-                min-width: fit-content;
-            }
-            
-            .message {
-                padding: 12px;
-                font-size: 0.9em;
-            }
-            
-            /* Ajuste para inputs no iOS */
-            input, select, textarea {
-                font-size: 16px !important;
-            }
+
+        .message.success {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            color: #065f46;
         }
-        
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 1.4em;
-            }
-            
-            .step h3 {
-                font-size: 1em;
-            }
-            
-            .step p {
-                font-size: 0.85em;
-            }
-            
-            .row-selector {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            }
-            
-            .feature-badge {
-                font-size: 0.75em;
-                padding: 5px 10px;
-            }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-        
-        /* Para telas muito pequenas (iPhone SE, etc) */
-        @media (max-width: 375px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .header {
-                padding: 15px 10px;
-                margin: -10px -10px 20px -10px;
-            }
-            
-            .section {
-                padding: 15px 10px;
-            }
-            
-            .btn {
-                padding: 10px 16px;
-                font-size: 14px;
-            }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        
-        /* Ajuste para landscape em mobile */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .steps-container {
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-            
-            .step {
-                min-width: 150px;
-                flex: 1;
-            }
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-size: 1.2rem;
+            flex-direction: column;
+            gap: 20px;
         }
-        
-        /* Melhorias para toque */
-        @media (hover: none) and (pointer: coarse) {
-            .spreadsheet-item:hover,
-            .column-item:hover,
-            .row-option:hover,
-            .mode-option:hover,
-            .btn:hover {
-                transform: none;
-                box-shadow: none;
-            }
-            
-            .spreadsheet-item:active,
-            .column-item:active,
-            .row-option:active,
-            .mode-option:active {
-                transform: scale(0.98);
-            }
-            
-            .btn:active {
-                transform: scale(0.98);
-            }
-            
-            /* Tamanho mínimo para toque */
-            .spreadsheet-item,
-            .column-item,
-            .row-option,
-            .btn,
-            .delete-btn,
-            .qty-btn,
-            .nav-tab {
-                min-height: 44px;
-            }
+
+        .preview-box {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
         }
-        
-        /* Evitar zoom em inputs no iOS */
-        @supports (-webkit-touch-callout: none) {
-            input, select, textarea {
-                font-size: 16px !important;
-            }
+
+        .preview-dimensions {
+            width: 160px;
+            height: 240px;
+            background: white;
+            border: 2px solid #4f46e5;
+            border-radius: 8px;
+            margin: 20px auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+        }
+
+        .preview-dimensions::before {
+            content: '120mm';
+            position: absolute;
+            left: -40px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            color: #4f46e5;
+            font-weight: bold;
+        }
+
+        .preview-dimensions::after {
+            content: '80mm';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #4f46e5;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <!-- O HTML CONTINUA EXATAMENTE IGUAL -->
+    <!-- Loading overlay -->
+    <div id="loading">
+        <div class="spinner" style="width: 40px; height: 40px;"></div>
+        <div id="loadingText">Gerando PDF 120×80mm...</div>
+    </div>
+
     <div class="container">
         <div class="header">
-            <h1>🏷️ Gerador de Etiquetas 120×80mm</h1>
-            <p>Gere etiquetas de todas as linhas OU multiplas cópias de uma linha específica</p>
-            <div class="features">
-                <div class="feature-badge">📏 120×80mm</div>
-                <div class="feature-badge">📊 Duas Opções</div>
-                <div class="feature-badge">🔢 Quantidade Customizada</div>
-                <div class="feature-badge">🎯 Linha Específica</div>
-            </div>
-            
-            <div class="nav-tabs">
-                <a href="/" class="nav-tab">🏠 Início</a>
-                <a href="/upload" class="nav-tab">📤 Upload</a>
-                <a href="/generate" class="nav-tab active">🏷️ Gerar</a>
-            </div>
+            <h1>🏷️ Gerar Etiquetas</h1>
+            <div class="dimensions-badge">📏 120mm (altura) × 80mm (largura)</div>
+            <p>Configure e gere suas etiquetas em formato padrão</p>
         </div>
-        
-        <!-- Indicador de passos -->
-        <div class="steps-container">
-            <div class="step active">
-                <div class="step-number">1</div>
-                <h3>Selecionar Planilha</h3>
-                <p>Escolha uma planilha Excel já enviada ao sistema</p>
+
+        <div class="main-content">
+            <!-- Mensagens -->
+            <div id="messages" class="messages">
+                Sistema carregado. Selecione uma planilha para começar.
             </div>
-            <div class="step" id="step2-indicator">
-                <div class="step-number">2</div>
-                <h3>Escolher Colunas</h3>
-                <p>Selecione quais dados aparecerão nas etiquetas</p>
-            </div>
-            <div class="step" id="step3-indicator">
-                <div class="step-number">3</div>
-                <h3>Configurar Geração</h3>
-                <p>Escolha o modo e configure as opções</p>
-            </div>
-            <div class="step" id="step4-indicator">
-                <div class="step-number">4</div>
-                <h3>Gerar PDF</h3>
-                <p>Baixe suas etiquetas no formato correto</p>
-            </div>
-        </div>
-        
-        <div id="messages"></div>
-        
-        <!-- PASSO 1 -->
-        <div class="section" id="step1">
-            <h2>📋 1. Selecione uma planilha</h2>
-            <div id="spreadsheets">
-                <div style="text-align: center; padding: 40px;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">📄</div>
-                    <p style="color: #64748b; margin-bottom: 10px;">Carregando planilhas...</p>
-                    <p style="color: #94a3b8; font-size: 0.9em;">Aguarde enquanto buscamos suas planilhas</p>
+
+            <!-- PASSO 1: Selecionar Planilha -->
+            <div class="step active" id="step1">
+                <h3 style="color: #4f46e5; margin-bottom: 20px;">📁 Selecione uma Planilha</h3>
+                
+                <div id="spreadsheetsList">
+                    <p>Carregando planilhas...</p>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="/upload" class="btn">
+                        📤 Fazer Upload de Nova Planilha
+                    </a>
+                    <button class="btn-secondary" onclick="createTestData()" style="margin-left: 10px;">
+                        🧪 Criar Dados de Teste
+                    </button>
                 </div>
             </div>
-            <div class="actions">
-                <button class="btn btn-primary" onclick="loadSpreadsheets()">
-                    🔄 Atualizar Lista
-                </button>
-                <a href="/upload" class="btn btn-secondary">
-                    📤 Enviar Nova Planilha
+
+            <!-- PASSO 2: Escolher Colunas -->
+            <div class="step" id="step2">
+                <h3 style="color: #4f46e5; margin-bottom: 20px;">📋 Selecione as Colunas</h3>
+                
+                <div id="sheetInfo">
+                    <p>Selecione uma planilha primeiro.</p>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <button class="btn-secondary" onclick="selectAllColumns()" style="margin-right: 10px;">
+                        Selecionar Todas
+                    </button>
+                    <button class="btn-secondary" onclick="clearAllColumns()">
+                        Limpar Seleção
+                    </button>
+                </div>
+                
+                <div id="columnsContainer">
+                    <p>Nenhuma coluna disponível.</p>
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn-secondary" onclick="goToStep(1)">
+                        ← Voltar
+                    </button>
+                    <button class="btn" id="nextBtn" onclick="goToStep(3)" disabled>
+                        Configurar Geração →
+                    </button>
+                </div>
+            </div>
+
+            <!-- PASSO 3: Configurar Geração -->
+            <div class="step" id="step3">
+                <h3 style="color: #4f46e5; margin-bottom: 20px;">⚙️ Configurar Geração</h3>
+                
+                <!-- Pré-visualização das dimensões -->
+                <div class="preview-box">
+                    <h4 style="color: #4f46e5; margin-bottom: 15px;">👁️ Pré-visualização do Formato</h4>
+                    <div class="preview-dimensions">
+                        <div style="text-align: left; font-size: 10px; color: #64748b;">
+                            🏷️ Cabeçalho
+                        </div>
+                        <div style="font-size: 9px; color: #1e293b;">
+                            📊 Dados das colunas selecionadas aparecerão aqui
+                        </div>
+                        <div style="text-align: right; font-size: 8px; color: #64748b;">
+                            📱 QR Code
+                        </div>
+                    </div>
+                    <p style="color: #64748b; font-size: 0.9rem; margin-top: 10px;">
+                        Cada etiqueta terá <strong>120mm de altura</strong> × <strong>80mm de largura</strong>
+                    </p>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600;">Modo de Geração:</label>
+                    <div style="display: flex; gap: 20px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="radio" name="mode" value="all" checked onchange="updateMode()">
+                            <span>📋 Todas as Linhas</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="radio" name="mode" value="single" onchange="updateMode()">
+                            <span>🎯 Linha Específica</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Configuração para linha específica -->
+                <div id="singleRowConfig" style="display: none; margin: 20px 0;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600;">Selecionar Linha:</label>
+                    <select id="rowSelect" style="padding: 10px; width: 100%; border: 2px solid #e2e8f0; border-radius: 8px;">
+                        <option value="0">Linha 1</option>
+                    </select>
+                    
+                    <div style="margin-top: 20px;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600;">Quantidade de Cópias:</label>
+                        <input type="number" id="quantity" value="1" min="1" max="100" 
+                               style="padding: 10px; width: 100px; border: 2px solid #e2e8f0; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <div id="summary" style="background: #f0f9ff; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4 style="color: #0ea5e9; margin-bottom: 10px;">📊 Resumo da Geração</h4>
+                    <div id="summaryContent">
+                        <p>Selecione as opções acima para ver o resumo.</p>
+                    </div>
+                </div>
+
+                <div class="navigation">
+                    <button class="btn-secondary" onclick="goToStep(2)">
+                        ← Voltar
+                    </button>
+                    <button class="btn btn-success" onclick="generatePDF()">
+                        🖨️ Gerar PDF 120×80mm
+                    </button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
+                <a href="/" class="btn-secondary">
+                    🏠 Voltar para Início
+                </a>
+                <a href="/api/test-pdf" class="btn-secondary" style="margin-left: 10px;">
+                    🧪 Testar PDF 120×80mm
                 </a>
             </div>
         </div>
-        
-        <!-- PASSO 2 -->
-        <div class="section" id="step2" style="display: none;">
-            <h2>🎯 2. Escolha as colunas para as etiquetas</h2>
-            <div id="sheetInfo"></div>
-            
-            <h3 style="margin: 25px 0 15px 0; color: #475569; font-size: 1.1em;">
-                Selecione as colunas que deseja incluir:
-            </h3>
-            <div id="columns"></div>
-            
-            <div class="actions">
-                <button class="btn btn-secondary" onclick="selectAllColumns()">
-                    ✅ Selecionar Todas
-                </button>
-                <button class="btn btn-secondary" onclick="clearAllColumns()">
-                    ❌ Limpar Seleção
-                </button>
-                <button class="btn btn-primary" onclick="goToStep3()" id="nextBtn" disabled>
-                    ⏭️ Continuar para Configuração
-                </button>
-            </div>
-        </div>
-        
-        <!-- PASSO 3 -->
-        <div class="section" id="step3" style="display: none;">
-            <h2>⚙️ 3. Configurar Modo de Geração</h2>
-            
-            <div class="info-panel">
-                <h3>📋 Resumo da Seleção</h3>
-                <p><strong>• Planilha:</strong> <span id="currentFileName">-</span></p>
-                <p><strong>• Colunas selecionadas:</strong> <span id="selectedColsCount">0</span></p>
-                <p><strong>• Total de linhas disponíveis:</strong> <span id="totalRows">0</span></p>
-                <p><strong>• Tamanho das etiquetas:</strong> 120mm × 80mm</p>
-            </div>
-            
-            <!-- Seletor de Modo -->
-            <h3 style="margin: 30px 0 15px 0; color: #475569; font-size: 1.2em;">
-                Escolha o modo de geração:
-            </h3>
-            
-            <div class="mode-selector">
-                <div class="mode-option selected" onclick="selectMode('all')" id="modeAll">
-                    <div class="mode-icon">📊</div>
-                    <div class="mode-title">Todas as Linhas</div>
-                    <div class="mode-description">
-                        Gera uma etiqueta para cada linha da planilha
-                    </div>
-                </div>
-                
-                <div class="mode-option" onclick="selectMode('single')" id="modeSingle">
-                    <div class="mode-icon">🎯</div>
-                    <div class="mode-title">Linha Específica</div>
-                    <div class="mode-description">
-                        Gera múltiplas cópias de uma única linha
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Configuração para Todas as Linhas -->
-            <div id="modeAllConfig" style="display: block;">
-                <div class="summary-box">
-                    <h3>📈 Geração para Todas as Linhas</h3>
-                    <div class="summary-item">
-                        <span class="summary-label">Total de etiquetas:</span>
-                        <span class="summary-value" id="allLabelsCount">0</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Modo:</span>
-                        <span class="summary-value">Uma etiqueta por linha</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Nome do arquivo:</span>
-                        <span class="summary-value">etiquetas_120x80_todas.pdf</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Configuração para Linha Específica -->
-            <div id="modeSingleConfig" style="display: none;">
-                <div class="row-selection">
-                    <h3>🎯 Selecione uma linha:</h3>
-                    <p style="color: #64748b; margin-bottom: 15px;">
-                        Clique em uma linha para visualizar seus dados
-                    </p>
-                    
-                    <div id="rowSelector" class="row-selector">
-                        <!-- Linhas serão carregadas aqui -->
-                    </div>
-                    
-                    <div id="rowPreview" class="row-preview" style="display: none;">
-                        <h4>📝 Dados da linha selecionada:</h4>
-                        <div id="selectedRowData"></div>
-                    </div>
-                </div>
-                
-                <div class="quantity-selector">
-                    <div>
-                        <h3>🔢 Quantidade de etiquetas:</h3>
-                        <p style="color: #64748b; margin-top: 5px;">
-                            Quantas cópias desta linha você deseja gerar?
-                        </p>
-                    </div>
-                    
-                    <div class="quantity-buttons">
-                        <button class="qty-btn" onclick="changeQuantity(-10)">-10</button>
-                        <button class="qty-btn" onclick="changeQuantity(-1)">-1</button>
-                        <input type="number" id="quantityInput" class="quantity-input" 
-                               value="1" min="1" max="1000" onchange="validateQuantity()">
-                        <button class="qty-btn" onclick="changeQuantity(1)">+1</button>
-                        <button class="qty-btn" onclick="changeQuantity(10)">+10</button>
-                    </div>
-                    
-                    <div style="color: #64748b; font-size: 0.9em;">
-                        Máximo: 1000 etiquetas
-                    </div>
-                </div>
-                
-                <div class="summary-box">
-                    <h3>📋 Resumo da Geração</h3>
-                    <div class="summary-item">
-                        <span class="summary-label">Linha selecionada:</span>
-                        <span class="summary-value" id="selectedRowNumber">-</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Quantidade:</span>
-                        <span class="summary-value" id="selectedQuantity">1</span> etiquetas
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Total a gerar:</span>
-                        <span class="summary-value" id="totalToGenerate">1</span> etiqueta(s)
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Nome do arquivo:</span>
-                        <span class="summary-value">etiquetas_120x80_linha_X.pdf</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="actions">
-                <button class="btn btn-secondary" onclick="goBackToStep2()">
-                    ↩️ Voltar para Colunas
-                </button>
-                <button class="btn btn-primary" onclick="goToStep4()" id="step3NextBtn">
-                    ⏭️ Continuar para Geração
-                </button>
-            </div>
-        </div>
-        
-        <!-- PASSO 4 -->
-        <div class="section" id="step4" style="display: none;">
-            <h2>📄 4. Gerar Etiquetas 120×80mm</h2>
-            
-            <div class="info-panel">
-                <h3>✅ Configuração Final</h3>
-                <div id="generationSummary"></div>
-                
-                <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #10b981;">
-                    <strong>Tamanho confirmado:</strong> 120mm de ALTURA × 80mm de LARGURA<br>
-                    <small>Formato retrato para melhor aproveitamento do espaço vertical</small>
-                </div>
-            </div>
-            
-            <div class="actions">
-                <button class="btn btn-primary" onclick="generateLabels()" id="generateBtn">
-                    🖨️ Gerar PDF 120×80mm
-                </button>
-                <button class="btn btn-secondary" onclick="goBackToStep3()">
-                    ↩️ Voltar para Configuração
-                </button>
-            </div>
-            
-            <div id="status"></div>
-        </div>
     </div>
-    
-    <!-- Modal de exclusão -->
-    <div class="modal" id="deleteModal">
-        <div class="modal-content">
-            <h2 style="color: #ef4444; margin-bottom: 15px;">🗑️ Confirmar Exclusão</h2>
-            <p id="deleteModalText" style="margin-bottom: 10px;"></p>
-            <p style="color: #64748b; font-size: 0.9em;">
-                Todos os dados desta planilha serão permanentemente removidos.
-            </p>
-            <div class="actions" style="margin-top: 25px;">
-                <button class="btn btn-secondary" onclick="closeDeleteModal()" style="flex: 1;">
-                    Cancelar
-                </button>
-                <button class="btn btn-primary" onclick="confirmDelete()" 
-                        style="background: #ef4444; flex: 1;">
-                    Sim, Excluir
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- O JAVASCRIPT CONTINUA EXATAMENTE IGUAL -->
+
     <script>
         // ========== CONFIGURAÇÃO ==========
-       // DEPOIS - COM FALLBACK:
-const API_URL = (function() {
-    // Se estiver em localhost
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return 'http://localhost:3001/api';
-    }
-    // Se estiver no Render (substitua pelo SEU backend URL)
-    return 'https://seu-backend.onrender.com/api';
-})();
+        const API_URL = 'http://localhost:3001/api';
+        console.log('🌐 URL da API:', API_URL);
 
-console.log('🌐 URL Atual:', window.location.href);
-console.log('🔗 API URL Configurada:', API_URL);
-        
+        // ========== ESTADO ==========
         let spreadsheets = [];
         let currentSheet = null;
         let selectedColumns = new Set();
-        let sheetToDelete = null;
-        
-        // NOVAS VARIÁVEIS
-        let currentMode = 'all'; // 'all' ou 'single'
-        let selectedRowIndex = 0;
-        let selectedRowData = null;
-        let quantity = 1;
-        
-        // ========== FUNÇÕES ==========
-        
+
+        // ========== FUNÇÕES DE MENSAGEM ==========
+        function showMessage(type, text) {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.className = `messages message ${type}`;
+            messagesDiv.innerHTML = text;
+            console.log(`[${type.toUpperCase()}] ${text}`);
+        }
+
+        // ========== CARREGAR PLANILHAS ==========
         async function loadSpreadsheets() {
             showMessage('info', 'Carregando planilhas disponíveis...');
             
@@ -1056,59 +470,49 @@ console.log('🔗 API URL Configurada:', API_URL);
                     renderSpreadsheets();
                     
                     if (spreadsheets.length > 0) {
-                        showMessage('success', `${spreadsheets.length} planilha(s) carregada(s) com sucesso`);
+                        showMessage('success', `${spreadsheets.length} planilha(s) carregada(s)`);
                     } else {
-                        showMessage('info', 'Nenhuma planilha encontrada. Faça upload de uma planilha Excel.');
+                        showMessage('info', 'Nenhuma planilha encontrada. Faça upload primeiro.');
                     }
                 }
             } catch (error) {
                 showMessage('error', 'Erro ao carregar planilhas: ' + error.message);
             }
         }
-        
+
         function renderSpreadsheets() {
-            const div = document.getElementById('spreadsheets');
+            const listDiv = document.getElementById('spreadsheetsList');
             
             if (spreadsheets.length === 0) {
-                div.innerHTML = `
-                    <div style="text-align: center; padding: 50px;">
-                        <div style="font-size: 64px; margin-bottom: 20px; color: #cbd5e1;">📄</div>
-                        <h3 style="color: #64748b; margin-bottom: 10px;">Nenhuma planilha encontrada</h3>
-                        <p style="color: #94a3b8; margin-bottom: 25px;">
-                            Faça upload de uma planilha Excel para começar a gerar etiquetas
-                        </p>
-                        <a href="/upload" class="btn btn-primary" style="display: inline-block;">
-                            📤 Fazer Upload Agora
-                        </a>
+                listDiv.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #64748b;">
+                        <p>📭 Nenhuma planilha encontrada</p>
+                        <p>Faça upload de uma planilha Excel para começar</p>
                     </div>
                 `;
                 return;
             }
             
-            div.innerHTML = `
-                <div class="spreadsheet-list">
-                    ${spreadsheets.map(sheet => `
-                        <div class="spreadsheet-item ${currentSheet?.id === sheet.id ? 'selected' : ''}" 
-                             onclick="selectSheet('${sheet.id}')">
-                            <div class="spreadsheet-info">
-                                <div class="spreadsheet-name">
-                                    <span>📄</span> ${sheet.fileName}
-                                </div>
-                                <div class="spreadsheet-meta">
-                                    ${sheet.rowCount} registros • ${sheet.columnCount} colunas • 
-                                    Upload: ${new Date(sheet.uploadDate).toLocaleDateString('pt-BR')}
-                                </div>
-                            </div>
-                            <button class="delete-btn" 
-                                    onclick="openDeleteModal(event, '${sheet.id}', '${sheet.fileName}')">
-                                🗑️ Excluir
-                            </button>
+            let html = '<div class="sheet-list">';
+            spreadsheets.forEach(sheet => {
+                html += `
+                    <div class="sheet-item ${currentSheet?.id === sheet.id ? 'selected' : ''}" 
+                         onclick="selectSheet('${sheet.id}')">
+                        <div>
+                            <h4>📄 ${sheet.fileName}</h4>
+                            <p style="color: #64748b; font-size: 0.9rem;">
+                                ${sheet.rowCount} linhas • ${sheet.columnCount} colunas
+                            </p>
                         </div>
-                    `).join('')}
-                </div>
-            `;
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            listDiv.innerHTML = html;
         }
-        
+
+        // ========== SELECIONAR PLANILHA ==========
         async function selectSheet(id) {
             showMessage('info', 'Carregando dados da planilha...');
             
@@ -1121,54 +525,52 @@ console.log('🔗 API URL Configurada:', API_URL);
                     selectedColumns.clear();
                     
                     document.getElementById('sheetInfo').innerHTML = `
-                        <div style="background: #e0e7ff; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                            <div style="font-weight: 600; font-size: 1.2em; color: #4f46e5; margin-bottom: 5px;">
-                                📋 ${currentSheet.fileName}
-                            </div>
-                            <div style="color: #64748b;">
-                                ${currentSheet.rowCount} registros • ${currentSheet.columnCount} colunas disponíveis
-                            </div>
+                        <div style="background: #e0e7ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h4 style="color: #4f46e5;">📋 ${currentSheet.fileName}</h4>
+                            <p style="color: #64748b; font-size: 0.9rem;">
+                                ${currentSheet.rowCount} registros • ${currentSheet.columnCount} colunas
+                            </p>
                         </div>
                     `;
                     
                     renderColumns();
+                    goToStep(2);
                     
-                    // Atualizar indicador de passos
-                    document.getElementById('step2-indicator').classList.add('active');
-                    
-                    // Mostrar passo 2
-                    document.getElementById('step2').style.display = 'block';
-                    document.getElementById('nextBtn').disabled = true;
-                    
-                    // Scroll suave
-                    document.getElementById('step2').scrollIntoView({ behavior: 'smooth' });
-                    
-                    showMessage('success', 'Planilha carregada! Selecione as colunas para as etiquetas.');
+                    showMessage('success', `Planilha carregada! ${currentSheet.columns.length} colunas encontradas.`);
                 }
             } catch (error) {
                 showMessage('error', 'Erro ao carregar planilha: ' + error.message);
             }
         }
-        
+
         function renderColumns() {
-            if (!currentSheet) return;
+            const container = document.getElementById('columnsContainer');
             
-            const div = document.getElementById('columns');
-            div.innerHTML = `
-                <div class="columns-container">
-                    ${currentSheet.columns.map(col => `
-                        <div class="column-item ${selectedColumns.has(col.id) ? 'selected' : ''}"
-                             onclick="toggleColumn('${col.id}')">
-                            <div class="column-check">
-                                ${selectedColumns.has(col.id) ? '✓' : ''}
-                            </div>
-                            <div class="column-name">${col.name}</div>
+            if (!currentSheet || !currentSheet.columns || currentSheet.columns.length === 0) {
+                container.innerHTML = '<p style="color: #ef4444;">⚠️ Nenhuma coluna encontrada na planilha!</p>';
+                return;
+            }
+            
+            let html = '<div class="columns-grid">';
+            currentSheet.columns.forEach(col => {
+                const isSelected = selectedColumns.has(col.id);
+                html += `
+                    <div class="column-item ${isSelected ? 'selected' : ''}" 
+                         onclick="toggleColumn('${col.id}')">
+                        <div class="column-check">
+                            ${isSelected ? '✓' : ''}
                         </div>
-                    `).join('')}
-                </div>
-            `;
+                        <div>
+                            ${col.name}
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
         }
-        
+
         function toggleColumn(id) {
             if (selectedColumns.has(id)) {
                 selectedColumns.delete(id);
@@ -1179,397 +581,258 @@ console.log('🔗 API URL Configurada:', API_URL);
             renderColumns();
             document.getElementById('nextBtn').disabled = selectedColumns.size === 0;
         }
-        
+
         function selectAllColumns() {
             if (!currentSheet) return;
-            currentSheet.columns.forEach(col => selectedColumns.add(col.id));
+            
+            currentSheet.columns.forEach(col => {
+                selectedColumns.add(col.id);
+            });
+            
             renderColumns();
             document.getElementById('nextBtn').disabled = false;
-            showMessage('info', 'Todas as colunas selecionadas');
+            showMessage('info', `Todas as ${currentSheet.columns.length} colunas selecionadas`);
         }
-        
+
         function clearAllColumns() {
             selectedColumns.clear();
             renderColumns();
             document.getElementById('nextBtn').disabled = true;
             showMessage('info', 'Seleção limpa');
         }
-        
-        function goToStep3() {
-            if (selectedColumns.size === 0) {
-                showMessage('error', 'Selecione pelo menos uma coluna para continuar');
+
+        // ========== NAVEGAÇÃO ==========
+        function goToStep(stepNumber) {
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            document.getElementById(`step${stepNumber}`).classList.add('active');
+            
+            if (stepNumber === 3) {
+                updateSummary();
+            }
+        }
+
+        function updateMode() {
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            const singleConfig = document.getElementById('singleRowConfig');
+            
+            if (mode === 'single') {
+                singleConfig.style.display = 'block';
+                const rowSelect = document.getElementById('rowSelect');
+                rowSelect.innerHTML = '';
+                for (let i = 0; i < currentSheet.rowCount; i++) {
+                    rowSelect.innerHTML += `<option value="${i}">Linha ${i + 1}</option>`;
+                }
+            } else {
+                singleConfig.style.display = 'none';
+            }
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            const summaryDiv = document.getElementById('summaryContent');
+            
+            if (!currentSheet || selectedColumns.size === 0) {
+                summaryDiv.innerHTML = '<p>Selecione uma planilha e colunas primeiro.</p>';
                 return;
             }
             
-            // Atualizar indicador de passos
-            document.getElementById('step3-indicator').classList.add('active');
+            let html = '<ul style="list-style: none; padding: 0;">';
+            html += `<li>📋 <strong>Planilha:</strong> ${currentSheet.fileName}</li>`;
+            html += `<li>📊 <strong>Colunas selecionadas:</strong> ${selectedColumns.size}</li>`;
             
-            // Atualizar informações no passo 3
-            document.getElementById('currentFileName').textContent = currentSheet.fileName;
-            document.getElementById('selectedColsCount').textContent = selectedColumns.size;
-            document.getElementById('totalRows').textContent = currentSheet.rowCount;
-            document.getElementById('allLabelsCount').textContent = currentSheet.rowCount;
-            
-            // Carregar linhas para seleção
-            if (currentSheet.data) {
-                renderRowSelector();
-            }
-            
-            // Mostrar passo 3
-            document.getElementById('step3').style.display = 'block';
-            
-            // Scroll suave
-            document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
-            
-            showMessage('success', 'Agora configure o modo de geração.');
-        }
-        
-        function goBackToStep2() {
-            document.getElementById('step3').style.display = 'none';
-            document.getElementById('step2').scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        // ========== FUNÇÕES DO PASSO 3 ==========
-        
-        function selectMode(mode) {
-            currentMode = mode;
-            
-            // Atualizar UI
-            document.getElementById('modeAll').classList.toggle('selected', mode === 'all');
-            document.getElementById('modeSingle').classList.toggle('selected', mode === 'single');
-            
-            // Mostrar configuração apropriada
-            document.getElementById('modeAllConfig').style.display = mode === 'all' ? 'block' : 'none';
-            document.getElementById('modeSingleConfig').style.display = mode === 'single' ? 'block' : 'none';
-            
-            // Atualizar resumo
-            updateGenerationSummary();
-        }
-        
-        function renderRowSelector() {
-            if (!currentSheet || !currentSheet.data) return;
-            
-            const selector = document.getElementById('rowSelector');
-            const rowsToShow = Math.min(20, currentSheet.rowCount); // Mostrar no máximo 20 linhas
-            
-            selector.innerHTML = '';
-            
-            for (let i = 0; i < rowsToShow; i++) {
-                const row = currentSheet.data[i];
-                if (!row) continue;
-                
-                // Pegar alguns valores para mostrar
-                const sampleValues = [];
-                const columnNames = Array.from(selectedColumns).map(colId => {
-                    const col = currentSheet.columns.find(c => c.id === colId);
-                    return col ? col.name : '';
-                }).filter(name => name);
-                
-                columnNames.slice(0, 2).forEach(colName => {
-                    if (row[colName]) {
-                        sampleValues.push(row[colName].substring(0, 15));
-                    }
-                });
-                
-                const rowDiv = document.createElement('div');
-                rowDiv.className = `row-option ${i === selectedRowIndex ? 'selected' : ''}`;
-                rowDiv.innerHTML = `
-                    <div style="font-weight: 600; margin-bottom: 3px;">Linha ${i + 1}</div>
-                    <div style="font-size: 0.8em; color: #64748b;">
-                        ${sampleValues.join(' • ') || '(sem dados)'}
-                    </div>
-                `;
-                rowDiv.onclick = () => selectRow(i, row);
-                
-                selector.appendChild(rowDiv);
-            }
-            
-            // Selecionar primeira linha por padrão
-            if (currentSheet.data.length > 0 && !selectedRowData) {
-                selectRow(0, currentSheet.data[0]);
-            }
-        }
-        
-        function selectRow(index, rowData) {
-            selectedRowIndex = index;
-            selectedRowData = rowData;
-            
-            // Atualizar UI
-            document.querySelectorAll('.row-option').forEach((el, i) => {
-                el.classList.toggle('selected', i === index);
-            });
-            
-            // Mostrar preview
-            const previewDiv = document.getElementById('rowPreview');
-            const dataDiv = document.getElementById('selectedRowData');
-            
-            previewDiv.style.display = 'block';
-            
-            // Mostrar dados da linha
-            let html = '<div style="font-size: 0.9em;">';
-            const columnNames = Array.from(selectedColumns).map(colId => {
-                const col = currentSheet.columns.find(c => c.id === colId);
-                return col ? col.name : '';
-            }).filter(name => name);
-            
-            columnNames.forEach(colName => {
-                const value = rowData[colName] || '(vazio)';
-                html += `
-                    <div style="margin-bottom: 5px;">
-                        <span style="color: #64748b; font-weight: 500;">${colName}:</span>
-                        <span style="color: #1e293b; margin-left: 8px;">${value}</span>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            dataDiv.innerHTML = html;
-            
-            // Atualizar resumo
-            document.getElementById('selectedRowNumber').textContent = index + 1;
-            updateGenerationSummary();
-        }
-        
-        function changeQuantity(amount) {
-            quantity = parseInt(document.getElementById('quantityInput').value) + amount;
-            if (quantity < 1) quantity = 1;
-            if (quantity > 1000) quantity = 1000;
-            
-            document.getElementById('quantityInput').value = quantity;
-            updateGenerationSummary();
-        }
-        
-        function validateQuantity() {
-            quantity = parseInt(document.getElementById('quantityInput').value);
-            if (isNaN(quantity) || quantity < 1) quantity = 1;
-            if (quantity > 1000) quantity = 1000;
-            
-            document.getElementById('quantityInput').value = quantity;
-            updateGenerationSummary();
-        }
-        
-        function updateGenerationSummary() {
-            if (currentMode === 'all') {
-                document.getElementById('selectedQuantity').textContent = currentSheet.rowCount;
-                document.getElementById('totalToGenerate').textContent = currentSheet.rowCount;
+            if (mode === 'all') {
+                html += `<li>🏷️ <strong>Total de etiquetas:</strong> ${currentSheet.rowCount}</li>`;
+                html += `<li>⚙️ <strong>Modo:</strong> Todas as linhas</li>`;
             } else {
-                document.getElementById('selectedQuantity').textContent = quantity;
-                document.getElementById('totalToGenerate').textContent = quantity;
-            }
-        }
-        
-        function goToStep4() {
-            // Validar configuração
-            if (currentMode === 'single' && !selectedRowData) {
-                showMessage('error', 'Selecione uma linha para continuar');
-                return;
+                const rowIndex = parseInt(document.getElementById('rowSelect').value);
+                const quantity = parseInt(document.getElementById('quantity').value) || 1;
+                html += `<li>🎯 <strong>Linha selecionada:</strong> ${rowIndex + 1}</li>`;
+                html += `<li>🔢 <strong>Quantidade:</strong> ${quantity} cópias</li>`;
+                html += `<li>🏷️ <strong>Total de etiquetas:</strong> ${quantity}</li>`;
+                html += `<li>⚙️ <strong>Modo:</strong> Linha específica</li>`;
             }
             
-            // Atualizar indicador de passos
-            document.getElementById('step4-indicator').classList.add('active');
-            
-            // Atualizar resumo final
-            const summaryDiv = document.getElementById('generationSummary');
-            let html = '';
-            
-            if (currentMode === 'all') {
-                html = `
-                    <p><strong>• Modo:</strong> Todas as linhas</p>
-                    <p><strong>• Total de etiquetas:</strong> ${currentSheet.rowCount}</p>
-                    <p><strong>• Colunas selecionadas:</strong> ${selectedColumns.size}</p>
-                    <p><strong>• Tamanho:</strong> 120mm × 80mm</p>
-                `;
-            } else {
-                html = `
-                    <p><strong>• Modo:</strong> Linha específica</p>
-                    <p><strong>• Linha selecionada:</strong> ${selectedRowIndex + 1}</p>
-                    <p><strong>• Quantidade:</strong> ${quantity} cópias</p>
-                    <p><strong>• Total de etiquetas:</strong> ${quantity}</p>
-                    <p><strong>• Colunas selecionadas:</strong> ${selectedColumns.size}</p>
-                    <p><strong>• Tamanho:</strong> 120mm × 80mm</p>
-                `;
-            }
+            html += `<li>📏 <strong>Dimensões:</strong> 120mm × 80mm (altura × largura)</li>`;
+            html += `<li>📱 <strong>QR Code:</strong> ✅ Incluído</li>`;
+            html += `<li>🎨 <strong>Layout:</strong> 2 colunas de dados</li>`;
+            html += '</ul>';
             
             summaryDiv.innerHTML = html;
-            
-            // Mostrar passo 4
-            document.getElementById('step4').style.display = 'block';
-            
-            // Scroll suave
-            document.getElementById('step4').scrollIntoView({ behavior: 'smooth' });
-            
-            showMessage('success', 'Pronto para gerar etiquetas!');
         }
-        
-        function goBackToStep3() {
-            document.getElementById('step4').style.display = 'none';
-            document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        // ========== GERAR ETIQUETAS ==========
-        
-        async function generateLabels() {
+
+        // ========== GERAR PDF ==========
+        async function generatePDF() {
             if (!currentSheet || selectedColumns.size === 0) {
-                showMessage('error', 'Configure os passos anteriores primeiro');
+                showMessage('error', 'Selecione uma planilha e pelo menos uma coluna.');
                 return;
             }
-            
-            if (currentMode === 'single' && !selectedRowData) {
-                showMessage('error', 'Selecione uma linha para gerar');
-                return;
+
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            const requestBody = {
+                spreadsheetId: currentSheet.id,
+                columns: Array.from(selectedColumns),
+                mode: mode
+            };
+
+            if (mode === 'single') {
+                requestBody.rowIndex = parseInt(document.getElementById('rowSelect').value);
+                requestBody.quantity = parseInt(document.getElementById('quantity').value) || 1;
             }
-            
-            const btn = document.getElementById('generateBtn');
-            const status = document.getElementById('status');
-            
-            btn.disabled = true;
-            btn.innerHTML = '<span>⏳</span> Gerando etiquetas...';
-            status.innerHTML = '<div class="message info">Criando PDF 120×80mm...</div>';
-            
+
+            console.log('📤 Enviando requisição para gerar PDF 120×80mm...');
+            console.log('📦 Corpo:', requestBody);
+
+            // Mostrar loading
+            const loading = document.getElementById('loading');
+            const loadingText = document.getElementById('loadingText');
+            loading.style.display = 'flex';
+            loadingText.textContent = 'Gerando PDF 120×80mm...';
+
             try {
-                const requestBody = {
-                    spreadsheetId: currentSheet.id,
-                    columns: Array.from(selectedColumns),
-                    mode: currentMode
-                };
-                
-                if (currentMode === 'single') {
-                    requestBody.rowIndex = selectedRowIndex;
-                    requestBody.quantity = quantity;
-                }
-                
                 const response = await fetch(API_URL + '/generate', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/pdf'
+                    },
                     body: JSON.stringify(requestBody)
                 });
-                
+
+                console.log('📡 Status:', response.status, response.statusText);
+                console.log('📄 Content-Type:', response.headers.get('content-type'));
+
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.error || `Erro ${response.status}`);
+                    try {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `Erro ${response.status}`);
+                    } catch {
+                        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                    }
                 }
-                
-                // Baixar PDF
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                
-                if (currentMode === 'all') {
-                    a.download = `etiquetas_120x80_todas_${currentSheet.fileName.replace(/\.[^/.]+$/, "")}_${Date.now()}.pdf`;
+
+                // Verificar se é um PDF
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/pdf')) {
+                    // Baixar o PDF
+                    const blob = await response.blob();
+                    
+                    if (blob.size === 0) {
+                        throw new Error('PDF vazio recebido');
+                    }
+
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    
+                    // Extrair nome do arquivo
+                    const contentDisposition = response.headers.get('content-disposition');
+                    let fileName = 'etiquetas_120x80.pdf';
+                    
+                    if (contentDisposition) {
+                        const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                        if (match && match[1]) {
+                            fileName = match[1].replace(/['"]/g, '');
+                        }
+                    }
+                    
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    console.log('✅ PDF baixado com sucesso:', fileName);
+                    showMessage('success', `✅ PDF gerado com sucesso!<br><strong>${fileName}</strong> baixado.`);
+                    
                 } else {
-                    a.download = `etiquetas_120x80_linha_${selectedRowIndex + 1}_x${quantity}_${Date.now()}.pdf`;
+                    const text = await response.text();
+                    console.error('❌ Resposta não é PDF:', text.substring(0, 200));
+                    throw new Error('O servidor não retornou um PDF válido');
                 }
-                
-                a.href = url;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-                
-                status.innerHTML = '<div class="message success">✅ PDF gerado com sucesso! Baixando...</div>';
-                
-                let successMsg;
-                if (currentMode === 'all') {
-                    successMsg = `PDF com ${currentSheet.rowCount} etiquetas gerado!`;
-                } else {
-                    successMsg = `PDF com ${quantity} etiquetas da linha ${selectedRowIndex + 1} gerado!`;
-                }
-                
-                showMessage('success', successMsg);
-                
+
             } catch (error) {
-                status.innerHTML = `<div class="message error">❌ Erro: ${error.message}</div>`;
-                showMessage('error', 'Falha na geração: ' + error.message);
-                console.error('Erro detalhado:', error);
+                console.error('❌ Erro na geração do PDF:', error);
+                showMessage('error', '❌ Erro ao gerar PDF: ' + error.message);
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = '🖨️ Gerar PDF 120×80mm';
+                loading.style.display = 'none';
             }
         }
-        
-        // ========== FUNÇÕES UTILITÁRIAS ==========
-        
-        function openDeleteModal(event, id, fileName) {
-            event.stopPropagation();
-            sheetToDelete = id;
-            document.getElementById('deleteModalText').textContent = 
-                `Tem certeza que deseja excluir permanentemente a planilha "${fileName}"?`;
-            document.getElementById('deleteModal').style.display = 'flex';
-        }
-        
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-            sheetToDelete = null;
-        }
-        
-        async function confirmDelete() {
-            if (!sheetToDelete) return;
-            
-            showMessage('info', 'Excluindo planilha...');
+
+        // ========== DADOS DE TESTE ==========
+        async function createTestData() {
+            showMessage('info', 'Criando dados de teste...');
             
             try {
-                const response = await fetch(API_URL + '/spreadsheet/' + sheetToDelete, {
-                    method: 'DELETE'
-                });
-                
+                const response = await fetch(API_URL + '/create-test');
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Remover da lista
-                    spreadsheets = spreadsheets.filter(s => s.id !== sheetToDelete);
-                    
-                    // Se era a planilha atual, limpar
-                    if (currentSheet && currentSheet.id === sheetToDelete) {
-                        currentSheet = null;
-                        selectedColumns.clear();
-                        selectedRowData = null;
-                        document.getElementById('step2').style.display = 'none';
-                        document.getElementById('step3').style.display = 'none';
-                        document.getElementById('step4').style.display = 'none';
-                        document.getElementById('step2-indicator').classList.remove('active');
-                        document.getElementById('step3-indicator').classList.remove('active');
-                        document.getElementById('step4-indicator').classList.remove('active');
-                    }
-                    
-                    renderSpreadsheets();
-                    showMessage('success', '✅ Planilha excluída com sucesso');
+                    showMessage('success', '✅ Dados de teste criados com sucesso!');
+                    setTimeout(loadSpreadsheets, 1000);
                 }
             } catch (error) {
-                showMessage('error', 'Erro ao excluir: ' + error.message);
-            } finally {
-                closeDeleteModal();
+                showMessage('error', 'Erro ao criar dados de teste: ' + error.message);
             }
         }
-        
-        function showMessage(type, text) {
-            const div = document.getElementById('messages');
-            const msg = document.createElement('div');
-            msg.className = `message ${type}`;
-            msg.textContent = text;
-            div.innerHTML = '';
-            div.appendChild(msg);
+
+        // ========== TESTAR PDF ==========
+        async function testPDF() {
+            console.log('🧪 Testando PDF 120×80mm...');
             
-            setTimeout(() => {
-                if (div.contains(msg)) div.removeChild(msg);
-            }, 5000);
+            try {
+                const response = await fetch(API_URL + '/test-pdf');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'teste_120x80.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    console.log('✅ PDF de teste baixado');
+                }
+            } catch (error) {
+                console.error('❌ Erro no teste de PDF:', error);
+            }
         }
-        
+
         // ========== INICIALIZAÇÃO ==========
-        
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Sistema de Etiquetas 120×80mm iniciado');
-            console.log('📏 Múltiplas opções de geração disponíveis');
+            console.log('🚀 Sistema de etiquetas 120×80mm iniciado');
+            
             loadSpreadsheets();
             
-            // Event listeners
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') closeDeleteModal();
-            });
+            document.getElementById('rowSelect').addEventListener('change', updateSummary);
+            document.getElementById('quantity').addEventListener('input', updateSummary);
             
-            document.getElementById('deleteModal').addEventListener('click', (e) => {
-                if (e.target.id === 'deleteModal') closeDeleteModal();
-            });
+            // Testar conexão
+            fetch(API_URL + '/ping')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('✅ Conexão com API:', data.message);
+                    if (data.dimensions) {
+                        console.log('📏', data.dimensions);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Não foi possível conectar à API:', error);
+                });
         });
+
+        // Expor funções para debug
+        window.debug = {
+            currentSheet: () => currentSheet,
+            selectedColumns: () => Array.from(selectedColumns),
+            generatePDF: generatePDF,
+            testPDF: testPDF
+        };
     </script>
 </body>
 </html>

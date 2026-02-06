@@ -2,619 +2,466 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload de Planilha</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: Arial, sans-serif; 
-            background: #f0f0f0; 
-            padding: 20px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 10px; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
-            max-width: 500px; 
-            width: 100%; 
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
-        h1 { 
-            color: #4f46e5; 
-            margin-bottom: 20px; 
-            text-align: center; 
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
         }
-        
-        /* Status da conexão */
-        #status {
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
+
+        .header {
             text-align: center;
-            border: 2px solid #ddd;
-            background: #f8fafc;
+            margin-bottom: 30px;
         }
-        #status.online { background: #d1fae5; border-color: #10b981; color: #065f46; }
-        #status.offline { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
-        #status.loading { background: #dbeafe; border-color: #3b82f6; color: #1e40af; }
-        
+
+        h1 {
+            font-size: 2.5rem;
+            color: #4f46e5;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
         .upload-area {
             border: 3px dashed #4f46e5;
-            border-radius: 10px;
-            padding: 40px 20px;
+            border-radius: 15px;
+            padding: 60px 30px;
             text-align: center;
-            margin: 20px 0;
+            margin: 30px 0;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            background: #f8fafc;
         }
+
         .upload-area:hover {
             background: #f0f4ff;
+            transform: translateY(-2px);
         }
+
+        .upload-area.dragover {
+            background: #e0e7ff;
+            border-color: #3b82f6;
+            border-style: solid;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #4f46e5;
+            margin-bottom: 20px;
+        }
+
+        .upload-text h3 {
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .upload-text p {
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .upload-text small {
+            color: #94a3b8;
+        }
+
         .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 32px;
             background: #4f46e5;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
             width: 100%;
-            margin-top: 15px;
-            transition: all 0.3s;
+            justify-content: center;
+            margin-top: 10px;
         }
+
         .btn:hover:not(:disabled) {
             background: #4338ca;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
         }
+
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        .mensagem {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 6px;
-            text-align: center;
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            margin-top: 15px;
         }
-        .sucesso { background: #d1fae5; color: #065f46; }
-        .erro { background: #fee2e2; color: #991b1b; }
-        .info { background: #dbeafe; color: #1e40af; }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e2e8f0;
+            color: #4f46e5;
+        }
+
+        .messages {
+            margin-top: 25px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
         .spinner {
+            width: 20px;
+            height: 20px;
             border: 3px solid #f3f3f3;
             border-top: 3px solid #4f46e5;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
             animation: spin 1s linear infinite;
             display: inline-block;
-            vertical-align: middle;
-            margin-right: 10px;
         }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .navigation {
+
+        .nav-tabs {
             display: flex;
+            gap: 10px;
+            margin-top: 30px;
             justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
+            flex-wrap: wrap;
         }
-        .nav-link {
-            color: #4f46e5;
+
+        .nav-tab {
+            padding: 10px 20px;
+            background: #f1f5f9;
+            border-radius: 10px;
             text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            transition: all 0.3s;
+            color: #475569;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
-        .nav-link:hover {
-            background: #f0f4ff;
+
+        .nav-tab:hover {
+            background: #e2e8f0;
+            color: #4f46e5;
         }
-        
-        /* ========== RESPONSIVIDADE ========== */
-        @media (max-width: 768px) {
-            body {
-                padding: 15px;
-                align-items: flex-start;
-                min-height: auto;
-                padding-top: 30px;
-            }
-            
-            .container {
-                padding: 20px;
-                max-width: 100%;
-            }
-            
-            h1 {
-                font-size: 1.5em;
-                margin-bottom: 15px;
-            }
-            
-            .upload-area {
-                padding: 30px 15px;
-                margin: 15px 0;
-            }
-            
-            .upload-area h3 {
-                font-size: 1.1em;
-                margin-bottom: 8px;
-            }
-            
-            .upload-area p {
-                font-size: 0.9em;
-                margin-bottom: 5px;
-            }
-            
-            .upload-area small {
-                font-size: 0.8em;
-            }
-            
-            .btn {
-                padding: 14px 20px;
-                font-size: 15px;
-                margin-top: 12px;
-                min-height: 50px;
-            }
-            
-            .mensagem {
-                padding: 12px;
-                font-size: 0.9em;
-            }
-            
-            .navigation {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .nav-link {
-                padding: 12px;
-                text-align: center;
-                font-size: 0.95em;
-            }
-            
-            #status {
-                padding: 12px;
-                font-size: 0.9em;
-            }
-            
-            /* Ajuste para ícones no mobile */
-            .upload-area div[style*="font-size: 48px"] {
-                font-size: 40px !important;
-                margin-bottom: 10px !important;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-                padding-top: 20px;
-            }
-            
-            .container {
-                padding: 15px;
-                border-radius: 8px;
-            }
-            
-            h1 {
-                font-size: 1.3em;
-            }
-            
-            .upload-area {
-                padding: 25px 10px;
-                border-width: 2px;
-            }
-            
-            .upload-area h3 {
-                font-size: 1em;
-            }
-            
-            .upload-area p {
-                font-size: 0.85em;
-            }
-            
-            .btn {
-                padding: 12px 16px;
-                font-size: 14px;
-                min-height: 46px;
-            }
-            
-            .nav-link {
-                padding: 10px;
-                font-size: 0.9em;
-            }
-            
-            .mensagem {
-                padding: 10px;
-                font-size: 0.85em;
-            }
-        }
-        
-        @media (max-width: 375px) {
-            .upload-area {
-                padding: 20px 10px;
-            }
-            
-            .upload-area div[style*="font-size: 48px"] {
-                font-size: 36px !important;
-            }
-            
-            .btn {
-                padding: 10px 14px;
-                font-size: 13px;
-            }
-        }
-        
-        /* Para landscape em mobile */
-        @media (max-height: 500px) and (orientation: landscape) {
-            body {
-                padding: 10px;
-                align-items: flex-start;
-                padding-top: 20px;
-            }
-            
-            .container {
-                max-height: 95vh;
-                overflow-y: auto;
-            }
-            
-            .upload-area {
-                padding: 20px;
-            }
-        }
-        
-        /* Melhorias para toque */
-        @media (hover: none) and (pointer: coarse) {
-            .upload-area:hover,
-            .nav-link:hover,
-            .btn:hover:not(:disabled) {
-                background: none;
-                transform: none;
-            }
-            
-            .upload-area:active,
-            .nav-link:active,
-            .btn:active:not(:disabled) {
-                transform: scale(0.98);
-                opacity: 0.9;
-            }
-            
-            /* Tamanho mínimo para toque */
-            .upload-area,
-            .btn,
-            .nav-link {
-                min-height: 44px;
-            }
-        }
-        
-        /* Evitar zoom em inputs no iOS */
-        @supports (-webkit-touch-callout: none) {
-            input, select, textarea {
-                font-size: 16px !important;
-            }
-        }
-        
-        /* Ajuste de drag and drop no mobile */
-        @media (pointer: coarse) {
-            .upload-area {
-                border-style: solid;
-            }
+
+        .nav-tab.active {
+            background: #4f46e5;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <!-- O HTML CONTINUA EXATAMENTE IGUAL -->
     <div class="container">
-        <h1>📤 Upload de Planilha</h1>
-        
-        <!-- Status da conexão -->
-        <div id="status" class="loading">
-            <span class="spinner"></span> Verificando conexão...
+        <div class="header">
+            <h1>
+                <span>📤</span>
+                Upload de Planilha
+            </h1>
+            <p class="subtitle">Envie sua planilha Excel para gerar etiquetas</p>
         </div>
-        
-        <!-- Mensagens do sistema -->
-        <div id="mensagens"></div>
-        
-        <!-- Área de upload -->
-        <div class="upload-area" onclick="document.getElementById('arquivo').click()">
-            <div style="font-size: 48px; margin-bottom: 10px;">📄</div>
-            <h3>Clique para selecionar uma planilha</h3>
-            <p>Formatos: .xlsx, .xls</p>
-            <small>Tamanho máximo: 10MB</small>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📄</div>
+            <div class="upload-text">
+                <h3>Clique ou arraste uma planilha</h3>
+                <p>Formatos suportados: .xlsx, .xls</p>
+                <small>Tamanho máximo: 20MB</small>
+            </div>
         </div>
-        
-        <!-- Input de arquivo -->
-        <input type="file" id="arquivo" accept=".xlsx,.xls" style="display: none;">
-        
-        <!-- Botão de envio -->
-        <button class="btn" id="uploadBtn" onclick="enviarArquivo()" disabled>
-            📤 Enviar Planilha
+
+        <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+
+        <button class="btn" id="uploadBtn" disabled onclick="uploadFile()">
+            <span id="btnText">Selecione um arquivo primeiro</span>
         </button>
-        
-        <!-- Navegação -->
-        <div class="navigation">
-            <a href="/" class="nav-link">🏠 Início</a>
-            <a href="/upload" class="nav-link">📤 Upload</a>
-            <a href="/generate" class="nav-link">🏷️ Gerar Etiquetas</a>
+
+        <a href="/" class="btn btn-secondary">
+            <span>←</span>
+            Voltar para o início
+        </a>
+
+        <div class="messages" id="messages"></div>
+
+        <div class="nav-tabs">
+            <a href="/" class="nav-tab">🏠 Início</a>
+            <a href="/upload" class="nav-tab active">📤 Upload</a>
+            <a href="/generate" class="nav-tab">🏷️ Gerar</a>
         </div>
     </div>
 
     <script>
-        // O JAVASCRIPT CONTINUA EXATAMENTE IGUAL
-        // ========== CONFIGURAÇÕES ==========
-        // URL da API - se estiver na mesma origem, usa relativa
-        // DEPOIS - COM FALLBACK:
-const API_URL = (function() {
-    // Se estiver em localhost
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return 'http://localhost:3001/api';
-    }
-    // Se estiver no Render (substitua pelo SEU backend URL)
-    return 'https://seu-backend.onrender.com/api';
-})();
-
-console.log('🌐 URL Atual:', window.location.href);
-console.log('🔗 API URL Configurada:', API_URL);
+        // Configuração da API
+        const API_URL = 'http://localhost:3001/api';
         console.log('🔗 API URL:', API_URL);
-        
-        let conexaoAtiva = false;
-        let arquivoSelecionado = null;
-        
-        // ========== FUNÇÕES PRINCIPAIS ==========
-        
-        // Testar conexão de forma segura
-        async function testarConexao() {
-            console.log('📡 Testando conexão com:', API_URL + '/ping');
+
+        // Estado
+        let currentFile = null;
+
+        // Elementos DOM
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const btnText = document.getElementById('btnText');
+        const messagesDiv = document.getElementById('messages');
+
+        // Funções de mensagem
+        function showMessage(type, text, duration = 5000) {
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
             
-            const statusDiv = document.getElementById('status');
-            if (!statusDiv) {
-                console.error('❌ Elemento #status não encontrado');
-                return false;
-            }
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️'
+            };
             
-            try {
-                statusDiv.className = 'loading';
-                statusDiv.innerHTML = '<span class="spinner"></span> Conectando...';
-                
-                // Testar com timeout
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
-                
-                const resposta = await fetch(API_URL + '/ping', {
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                // Tentar como JSON
-                try {
-                    const dados = await resposta.json();
-                    console.log('✅ Conexão OK:', dados);
-                    
-                    statusDiv.className = 'online';
-                    statusDiv.innerHTML = `
-                        ✅ <strong>Backend Conectado!</strong><br>
-                        <small>Servidor: ${dados.server || 'Etiquetas API'}</small>
-                    `;
-                    
-                    conexaoAtiva = true;
-                    mostrarMensagem('sucesso', 'Sistema pronto para uso!');
-                    return true;
-                    
-                } catch (jsonError) {
-                    // Se não for JSON, verificar se pelo menos responde
-                    if (resposta.ok) {
-                        statusDiv.className = 'online';
-                        statusDiv.innerHTML = '✅ Backend respondendo (mas não em JSON)';
-                        conexaoAtiva = true;
-                        return true;
-                    }
-                    throw new Error('Resposta não é JSON');
-                }
-                
-            } catch (error) {
-                console.error('❌ Erro de conexão:', error);
-                
-                statusDiv.className = 'offline';
-                statusDiv.innerHTML = `
-                    ❌ <strong>Backend Offline</strong><br>
-                    <small>${error.message}</small>
-                `;
-                
-                conexaoAtiva = false;
-                mostrarMensagem('erro', 'Não foi possível conectar ao servidor');
-                return false;
-            }
-        }
-        
-        // Quando selecionar arquivo
-        document.getElementById('arquivo').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            arquivoSelecionado = file;
-            
-            // Validar arquivo
-            if (!validarArquivo(file)) {
-                arquivoSelecionado = null;
-                document.getElementById('uploadBtn').disabled = true;
-                return;
-            }
-            
-            // Atualizar visual
-            const uploadArea = document.querySelector('.upload-area');
-            const tamanhoMB = (file.size / (1024 * 1024)).toFixed(2);
-            
-            uploadArea.innerHTML = `
-                <div style="font-size: 48px; margin-bottom: 10px; color: #10b981;">📄</div>
-                <h3>${file.name}</h3>
-                <p>${tamanhoMB} MB • Pronto para enviar</p>
-                <small>Clique para selecionar outro arquivo</small>
+            message.innerHTML = `
+                <span>${icons[type] || '📢'}</span>
+                <span>${text}</span>
             `;
             
-            // Habilitar botão
-            document.getElementById('uploadBtn').disabled = false;
+            messagesDiv.prepend(message);
             
-            mostrarMensagem('info', `Arquivo "${file.name}" selecionado`);
-        });
-        
-        // Validar arquivo
-        function validarArquivo(file) {
-            // Tipo
-            if (!file.name.match(/\.(xlsx|xls)$/i)) {
-                mostrarMensagem('erro', 'Apenas arquivos Excel (.xlsx, .xls) são permitidos');
-                return false;
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (message.parentNode === messagesDiv) {
+                        messagesDiv.removeChild(message);
+                    }
+                }, duration);
             }
             
-            // Tamanho (10MB)
-            if (file.size > 10 * 1024 * 1024) {
-                mostrarMensagem('erro', 'Arquivo muito grande. Máximo: 10MB');
-                return false;
-            }
-            
-            return true;
+            console.log(`[${type.toUpperCase()}] ${text}`);
         }
-        
-        // Enviar arquivo
-        async function enviarArquivo() {
-            if (!conexaoAtiva) {
-                mostrarMensagem('erro', 'Servidor offline. Verifique a conexão.');
+
+        // Configurar drag and drop
+        function setupDragAndDrop() {
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length > 0) {
+                    handleFileSelect(e.dataTransfer.files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+        }
+
+        // Processar seleção de arquivo
+        function handleFileSelect(file) {
+            // Validar arquivo
+            const validTypes = ['.xlsx', '.xls'];
+            const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!validTypes.includes(fileExt)) {
+                showMessage('error', 'Formato inválido. Use apenas .xlsx ou .xls');
                 return;
             }
-            
-            if (!arquivoSelecionado) {
-                mostrarMensagem('erro', 'Selecione um arquivo primeiro!');
+
+            if (file.size > 20 * 1024 * 1024) {
+                showMessage('error', 'Arquivo muito grande. Máximo: 20MB');
                 return;
             }
+
+            // Atualizar interface
+            currentFile = file;
             
-            console.log('📤 Enviando arquivo:', arquivoSelecionado.name);
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
             
-            const btn = document.getElementById('uploadBtn');
-            const btnOriginal = btn.innerHTML;
+            uploadArea.innerHTML = `
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">
+                    <h3>${file.name}</h3>
+                    <p>${sizeMB} MB • Pronto para enviar</p>
+                    <small>Clique ou arraste outro arquivo</small>
+                </div>
+            `;
             
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Enviando...';
+            uploadBtn.disabled = false;
+            btnText.textContent = `Enviar "${file.name}"`;
             
+            showMessage('info', `Arquivo selecionado: ${file.name} (${sizeMB} MB)`);
+            
+            // Reconfigurar eventos
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+        }
+
+        // Upload do arquivo
+        async function uploadFile() {
+            if (!currentFile) {
+                showMessage('error', 'Selecione um arquivo primeiro');
+                return;
+            }
+
+            // Desabilitar botão
+            uploadBtn.disabled = true;
+            const originalText = btnText.textContent;
+            btnText.innerHTML = '<span class="spinner"></span> Enviando...';
+
             try {
                 const formData = new FormData();
-                formData.append('spreadsheet', arquivoSelecionado);
-                
-                mostrarMensagem('info', 'Enviando arquivo...');
-                
-                const resposta = await fetch(API_URL + '/upload', {
+                formData.append('spreadsheet', currentFile);
+
+                showMessage('info', 'Enviando planilha para processamento...');
+                console.log('📤 Enviando arquivo para:', API_URL + '/upload');
+
+                const response = await fetch(API_URL + '/upload', {
                     method: 'POST',
                     body: formData
                 });
-                
-                console.log('📡 Status:', resposta.status);
-                
-                // Tentar parsear como JSON
-                let dados;
+
+                console.log('📡 Status:', response.status, response.statusText);
+
+                let data;
                 try {
-                    dados = await resposta.json();
-                } catch (e) {
-                    // Se não for JSON, criar objeto básico
-                    dados = {
-                        sucesso: resposta.ok,
-                        mensagem: resposta.ok ? 'Arquivo enviado' : 'Erro no servidor'
-                    };
+                    data = await response.json();
+                    console.log('📊 Resposta:', data);
+                } catch (jsonError) {
+                    console.error('❌ Erro ao parsear JSON:', jsonError);
+                    const text = await response.text();
+                    console.error('📄 Resposta em texto:', text.substring(0, 500));
+                    throw new Error('Resposta inválida do servidor');
                 }
-                
-                if (!resposta.ok) {
-                    throw new Error(dados.erro || dados.error || `Erro ${response.status}`);
-                }
-                
-                if (dados.sucesso || resposta.ok) {
-                    // Sucesso
-                    mostrarMensagem('sucesso', 
-                        `✅ ${dados.mensagem || 'Arquivo enviado com sucesso!'}<br>
-                        <strong>${arquivoSelecionado.name}</strong>`
+
+                if (response.ok && data.success) {
+                    showMessage('success', 
+                        `✅ ${data.message}<br>
+                        <strong>${currentFile.name}</strong> processado com sucesso!`
                     );
-                    
-                    // Resetar
-                    document.getElementById('arquivo').value = '';
-                    arquivoSelecionado = null;
-                    
-                    document.querySelector('.upload-area').innerHTML = `
-                        <div style="font-size: 48px; margin-bottom: 10px; color: #10b981;">✅</div>
-                        <h3>Upload concluído!</h3>
-                        <p>Clique para enviar outra planilha</p>
+
+                    // Resetar interface
+                    uploadArea.innerHTML = `
+                        <div class="upload-icon">✅</div>
+                        <div class="upload-text">
+                            <h3>Upload Concluído!</h3>
+                            <p>${data.spreadsheet.rowCount} linhas processadas</p>
+                            <small>Clique ou arraste outro arquivo</small>
+                        </div>
                     `;
-                    
-                    btn.disabled = true;
-                    
+
+                    fileInput.value = '';
+                    currentFile = null;
+                    uploadBtn.disabled = true;
+                    btnText.textContent = 'Selecione um arquivo primeiro';
+
+                    // Redirecionar para gerar etiquetas após 2 segundos
+                    setTimeout(() => {
+                        window.location.href = '/generate';
+                    }, 2000);
+
                 } else {
-                    mostrarMensagem('erro', dados.erro || dados.error || 'Erro desconhecido');
-                    btn.disabled = false;
+                    throw new Error(data.error || `Erro ${response.status}: ${response.statusText}`);
                 }
-                
+
             } catch (error) {
                 console.error('❌ Erro no upload:', error);
-                mostrarMensagem('erro', `Falha no upload: ${error.message}`);
-                btn.disabled = false;
+                showMessage('error', `Falha no upload: ${error.message}`);
                 
-            } finally {
-                btn.innerHTML = btnOriginal;
+                uploadBtn.disabled = false;
+                btnText.textContent = originalText;
             }
         }
-        
-        // Mostrar mensagem
-        function mostrarMensagem(tipo, texto) {
-            const div = document.getElementById('mensagens');
-            const msg = document.createElement('div');
-            msg.className = `mensagem ${tipo}`;
-            msg.innerHTML = texto;
-            
-            // Limpar mensagens anteriores
-            div.innerHTML = '';
-            div.appendChild(msg);
-            
-            // Auto-remover após 5 segundos
-            setTimeout(() => {
-                if (div.contains(msg)) {
-                    div.removeChild(msg);
-                }
-            }, 5000);
+
+        // Testar conexão com a API
+        async function testConnection() {
+            try {
+                const response = await fetch(API_URL + '/ping');
+                const data = await response.json();
+                console.log('✅ Conexão com API:', data.message);
+                return true;
+            } catch (error) {
+                console.error('❌ Não foi possível conectar à API:', error);
+                showMessage('error', 'Não foi possível conectar ao servidor. Verifique se o backend está rodando.');
+                return false;
+            }
         }
-        
-        // ========== INICIALIZAÇÃO ==========
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 Página carregada');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📤 Página de upload carregada');
+            
+            // Configurar drag and drop
+            setupDragAndDrop();
             
             // Testar conexão
-            await testarConexao();
-            
-            // Configurar drag and drop simples
-            const uploadArea = document.querySelector('.upload-area');
-            
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.style.background = '#f0f4ff';
-            });
-            
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.style.background = '';
-            });
-            
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.style.background = '';
-                
-                if (e.dataTransfer.files.length) {
-                    const file = e.dataTransfer.files[0];
-                    if (file.name.match(/\.(xlsx|xls)$/i)) {
-                        document.getElementById('arquivo').files = e.dataTransfer.files;
-                        
-                        // Disparar evento change
-                        const event = new Event('change');
-                        document.getElementById('arquivo').dispatchEvent(event);
-                    } else {
-                        mostrarMensagem('erro', 'Apenas arquivos Excel são permitidos');
-                    }
-                }
-            });
+            testConnection();
         });
     </script>
 </body>
