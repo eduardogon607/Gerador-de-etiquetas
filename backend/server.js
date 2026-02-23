@@ -9,15 +9,31 @@ const cors = require('cors');
 const QRCode = require('qrcode');
 
 // ========== CONFIGURAÇÃO ==========
+const PORT = process.env.PORT || 3001;
+const isProduction = process.env.NODE_ENV === 'production';
+
+// ========== INICIALIZAR APP ==========
 const app = express();
-const PORT = 3001;
 
 // ========== CONFIGURAÇÃO CORS ==========
-app.use(cors());
+app.use(cors({
+    origin: isProduction ? process.env.RENDER_EXTERNAL_URL : '*',
+    credentials: true
+}));
 
 // ========== MIDDLEWARES ==========
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Middleware para forçar HTTPS em produção
+if (isProduction) {
+    app.use((req, res, next) => {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            return res.redirect('https://' + req.headers.host + req.url);
+        }
+        next();
+    });
+}
 
 // Servir arquivos estáticos
 const frontendPath = path.join(__dirname, '..', 'frontend');
