@@ -163,7 +163,7 @@ app.get('/api/ping', (req, res) => {
         success: true, 
         message: 'API Online 🚀', 
         time: new Date().toISOString(),
-        dimensions: 'Etiquetas 120mm (altura) × 80mm (largura)'
+        dimensions: 'Etiquetas 110mm (altura) × 80mm (largura)'
     });
 });
 
@@ -370,7 +370,7 @@ app.post('/api/upload', upload.single('spreadsheet'), async (req, res) => {
 
 // ========== GERAR PDF - DIMENSÕES CORRETAS ==========
 app.post('/api/generate', async (req, res) => {
-    console.log('🏷️ Recebendo requisição para gerar PDF (120×80mm)...');
+    console.log('🏷️ Recebendo requisição para gerar PDF (110×80mm)...');
     
     try {
         const { 
@@ -445,12 +445,12 @@ app.post('/api/generate', async (req, res) => {
         }
 
         // ========== CONFIGURAÇÃO DO PDF ==========
-        // 120mm ALTURA × 80mm LARGURA em pontos (1mm = 2.834645669 points)
+        // 110mm ALTURA × 80mm LARGURA em pontos (1mm = 2.834645669 points)
         const pageWidth = 80 * 2.834645669;   // Largura da etiqueta
-        const pageHeight = 120 * 2.834645669; // Altura da etiqueta
+        const pageHeight = 110 * 2.834645669; // Altura da etiqueta
 
         console.log(`📏 Dimensões da etiqueta:`);
-        console.log(`   - Altura: 120mm (${pageHeight.toFixed(2)} pontos)`);
+        console.log(`   - Altura: 110mm (${pageHeight.toFixed(2)} pontos)`);
         console.log(`   - Largura: 80mm (${pageWidth.toFixed(2)} pontos)`);
         console.log(`   - Total de etiquetas: ${dataToProcess.length}`);
 
@@ -465,7 +465,7 @@ app.post('/api/generate', async (req, res) => {
         // Configurar headers da resposta
         const timestamp = new Date().toISOString().slice(0, 19).replace(/[:]/g, '-');
         const fileName = mode === 'all' 
-            ? `etiquetas_120x80_${timestamp}.pdf`
+            ? `etiquetas_110x80_${timestamp}.pdf`
             : `etiqueta_linha${rowIndex + 1}_${timestamp}.pdf`;
 
         // Configurar headers importantes
@@ -505,42 +505,42 @@ app.post('/api/generate', async (req, res) => {
 
             labelCount++;
 
-            // ========== CABEÇALHO REDUZIDO ==========
-            const headerHeight = 16; // Aumentado de 14 para 16
+            // ========== CABEÇALHO (NEGRITO) ==========
+            const headerHeight = 16;
             doc.rect(0, 0, pageWidth, headerHeight)
                .fill('#4f46e5');
             
-            // Número da etiqueta - FONTE MAIOR
-            doc.fontSize(10) // Aumentado de 8 para 10
+            // Número da etiqueta - NEGRITO
+            doc.fontSize(10)
                .fillColor('white')
                .font('Helvetica-Bold')
-               .text(`ETIQUETA ${labelCount}/${totalLabels}`, 10, 4); // Ajustado posição Y
+               .text(`ETIQUETA ${labelCount}/${totalLabels}`, 10, 4);
 
-            // ========== CONTEÚDO PRINCIPAL - UMA ÚNICA COLUNA ==========
-            const contentStartY = headerHeight + 10; // Aumentado espaçamento
+            // ========== CONTEÚDO PRINCIPAL ==========
+            const contentStartY = headerHeight + 10;
             const contentWidth = pageWidth - 20;
             
             // Calcular altura dos itens baseado no número de colunas
             const totalItems = selectedColumns.length;
-            const availableHeight = pageHeight - contentStartY - 50; // Reduzido espaço para QR maior
-            const itemHeight = Math.min(20, availableHeight / totalItems); // Aumentado de 16 para 20
+            const availableHeight = pageHeight - contentStartY - 50;
+            const itemHeight = Math.min(20, availableHeight / totalItems);
             
             const cardHeight = itemHeight;
-            const cardSpacing = 5; // Aumentado de 4 para 5
+            const cardSpacing = 5;
             
             let currentY = contentStartY;
             
-            // Ajustar tamanho da fonte baseado no número de colunas - FONTES MAIORES
-            let fontSize = 9; // Aumentado de 7 para 9
-            let labelFontSize = 7; // Aumentado de 5 para 7
+            // Ajustar tamanho da fonte baseado no número de colunas
+            let fontSize = 9;
+            let labelFontSize = 7;
             
             if (totalItems > 8) {
-                fontSize = 8; // Aumentado de 6 para 8
-                labelFontSize = 6; // Aumentado de 4 para 6
+                fontSize = 8;
+                labelFontSize = 6;
             }
             if (totalItems > 12) {
-                fontSize = 7; // Aumentado de 5 para 7
-                labelFontSize = 5; // Aumentado de 3 para 5
+                fontSize = 7;
+                labelFontSize = 5;
             }
 
             console.log(`📝 Configuração fonte: Label=${labelFontSize}px, Valor=${fontSize}px, Altura item=${cardHeight}px`);
@@ -551,35 +551,35 @@ app.post('/api/generate', async (req, res) => {
                 
                 if (value.toString().trim() === '') continue;
                 
-                // Verificar se ainda cabe na etiqueta (deixar espaço para QR Code maior)
-                if (currentY + cardHeight > pageHeight - 55) { // Ajustado para QR maior
+                // Verificar se ainda cabe na etiqueta
+                if (currentY + cardHeight > pageHeight - 55) {
                     console.log(`⚠️ Etiqueta ${labelCount}: Apenas ${colIndex} de ${selectedColumns.length} colunas couberam`);
                     break;
                 }
 
-                // Cartão de informação - LARGURA TOTAL
-                doc.roundedRect(10, currentY, contentWidth, cardHeight, 3) // Raio aumentado
+                // Cartão de informação
+                doc.roundedRect(10, currentY, contentWidth, cardHeight, 3)
                    .fill('#f8fafc')
                    .stroke('#e2e8f0')
                    .stroke();
 
-                // Nome da coluna (em cima) - FONTE MAIOR
+                // Nome da coluna - NEGRITO GARANTIDO (cor roxa para destacar)
                 doc.fontSize(labelFontSize)
-                   .fillColor('#64748b')
-                   .font('Helvetica')
+                   .fillColor('#000000')
+                   .font('Helvetica-Bold')
                    .text(col.name.toUpperCase(), 
                          12, 
-                         currentY + 3, // Ajustado posição
+                         currentY + 3,
                          { 
                              width: contentWidth - 4,
                              ellipsis: true 
                          });
 
-                // Valor (embaixo) - FONTE MAIOR
+                // Valor - NEGRITO
                 let displayValue = String(value);
                 
-                // Calcular comprimento máximo baseado no espaço (com fonte maior)
-                const maxChars = Math.floor(contentWidth / (fontSize * 0.5)); // Ajustado cálculo
+                // Calcular comprimento máximo baseado no espaço
+                const maxChars = Math.floor(contentWidth / (fontSize * 0.5));
                 if (displayValue.length > maxChars) {
                     displayValue = displayValue.substring(0, maxChars - 3) + '...';
                 }
@@ -589,7 +589,7 @@ app.post('/api/generate', async (req, res) => {
                    .font('Helvetica-Bold')
                    .text(displayValue, 
                          12, 
-                         currentY + (cardHeight / 1.5), // Ajustado posição vertical
+                         currentY + (cardHeight / 1.5),
                          { 
                              width: contentWidth - 4,
                              ellipsis: true 
@@ -599,13 +599,12 @@ app.post('/api/generate', async (req, res) => {
                 currentY += cardHeight + cardSpacing;
             }
 
-            // ========== QR CODE MAIOR ==========
+            // ========== QR CODE ==========
             try {
-                // Texto compacto para o QR Code
                 const qrText = `ETQ${labelCount}/${totalLabels}\n${new Date().toLocaleDateString('pt-BR')}`;
                 
                 const qrCode = await QRCode.toBuffer(qrText, {
-                    width: 120, // Aumentado de 100 para 120
+                    width: 120,
                     margin: 1,
                     color: { 
                         dark: '#000000', 
@@ -614,68 +613,68 @@ app.post('/api/generate', async (req, res) => {
                     errorCorrectionLevel: 'M'
                 });
 
-                const qrSize = 35; // AUMENTADO de 25 para 35 (40% maior)
-                const qrX = pageWidth - qrSize - 15; // Ajustado margem
-                const qrY = pageHeight - qrSize - 15; // Ajustado margem
+                const qrSize = 35;
+                const qrX = pageWidth - qrSize - 15;
+                const qrY = pageHeight - qrSize - 15;
                 
-                // Adicionar QR Code
                 doc.image(qrCode, qrX, qrY, {
                     width: qrSize,
                     height: qrSize
                 });
                 
-                // Borda do QR Code
-                doc.rect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4) // Borda mais grossa
+                doc.rect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4)
                    .stroke('#4f46e5')
-                   .lineWidth(0.8); // Linha mais grossa
+                   .lineWidth(0.8);
                 
-                // Legenda com fonte maior
-                doc.fontSize(6) // Aumentado de 4 para 6
+                // Legenda QR Code - NEGRITO
+                doc.fontSize(6)
                    .fillColor('#4f46e5')
                    .font('Helvetica-Bold')
                    .text('QR CODE', 
                          qrX, 
-                         qrY + qrSize + 2, // Ajustado posição
+                         qrY + qrSize + 2,
                          { 
                              width: qrSize, 
                              align: 'center' 
                          });
                 
-                console.log(`✅ QR Code maior adicionado (${qrSize}px)`);
+                console.log(`✅ QR Code adicionado (${qrSize}px)`);
                 
             } catch (qrError) {
                 console.log(`⚠️ QR Code não gerado: ${qrError.message}`);
             }
 
-            // ========== RODAPÉ COMPACTO ==========
-            // Nome do arquivo truncado
+            // ========== RODAPÉ (TUDO EM NEGRITO) ==========
             const shortFileName = spreadsheet.fileName.length > 25 
                 ? spreadsheet.fileName.substring(0, 22) + '...' 
                 : spreadsheet.fileName;
             
-            doc.fontSize(6) // Aumentado de 5 para 6
+            // Nome do arquivo - NEGRITO
+            doc.fontSize(6)
                .fillColor('#64748b')
+               .font('Helvetica-Bold')
                .text(shortFileName, 
                      10, 
-                     pageHeight - 15, // Ajustado posição
+                     pageHeight - 15,
                      { 
-                         width: pageWidth - 90, // Ajustado largura
+                         width: pageWidth - 90,
                          ellipsis: true 
                      });
 
-            // Data compacta com fonte maior
-            doc.fontSize(6) // Aumentado de 5 para 6
+            // Data - NEGRITO
+            doc.fontSize(6)
                .fillColor('#64748b')
+               .font('Helvetica-Bold')
                .text(new Date().toLocaleDateString('pt-BR'), 
-                     pageWidth - 80, // Ajustado posição
-                     pageHeight - 15, // Ajustado posição
+                     pageWidth - 80,
+                     pageHeight - 15,
                      { 
-                         width: 70, // Ajustado largura
+                         width: 70,
                          align: 'right' 
                      });
 
             // Linha divisória
-            doc.moveTo(10, pageHeight - 18) // Ajustado posição
+            doc.moveTo(10, pageHeight - 18)
                .lineTo(pageWidth - 10, pageHeight - 18)
                .stroke('#e2e8f0')
                .lineWidth(0.5);
@@ -688,15 +687,18 @@ app.post('/api/generate', async (req, res) => {
                 margins: { top: 0, bottom: 0, left: 0, right: 0 }
             });
             
-            doc.fontSize(14) // Aumentado
+            // Mensagem de erro - NEGRITO
+            doc.fontSize(14)
                .fillColor('#64748b')
+               .font('Helvetica-Bold')
                .text('Nenhum dado encontrado', 
                      pageWidth / 2, 
                      pageHeight / 2 - 20,
                      { align: 'center' });
             
-            doc.fontSize(12) // Aumentado
+            doc.fontSize(12)
                .fillColor('#94a3b8')
+               .font('Helvetica-Bold')
                .text('Verifique as colunas selecionadas', 
                      pageWidth / 2, 
                      pageHeight / 2,
@@ -706,13 +708,12 @@ app.post('/api/generate', async (req, res) => {
         // Finalizar PDF
         doc.end();
 
-        console.log(`✅ PDF gerado com sucesso: ${labelCount} etiquetas 120×80mm`);
+        console.log(`✅ PDF gerado com sucesso: ${labelCount} etiquetas 110×80mm`);
         console.log(`📤 Arquivo: ${fileName}`);
 
     } catch (error) {
         console.error('❌ Erro ao gerar PDF:', error);
         
-        // Se ainda não enviou headers, enviar erro JSON
         if (!res.headersSent) {
             res.status(500).json({
                 success: false,
@@ -727,11 +728,10 @@ app.post('/api/generate', async (req, res) => {
 // ========== TESTE DE PDF COM DIMENSÕES CORRETAS ==========
 app.get('/api/test-pdf', async (req, res) => {
     try {
-        console.log('🧪 Gerando PDF de teste 120×80mm...');
+        console.log('🧪 Gerando PDF de teste 110×80mm...');
         
-        // Dimensões corretas: 120mm altura × 80mm largura
-        const pageWidth = 80 * 2.834645669;   // Largura
-        const pageHeight = 120 * 2.834645669; // Altura
+        const pageWidth = 80 * 2.834645669;
+        const pageHeight = 110 * 2.834645669;
         
         const doc = new PDFDocument({
             size: [pageWidth, pageHeight],
@@ -739,22 +739,19 @@ app.get('/api/test-pdf', async (req, res) => {
             autoFirstPage: false
         });
         
-        // Headers CORRETOS para PDF
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename="etiqueta_teste_120x80.pdf"');
+        res.setHeader('Content-Disposition', 'attachment; filename="etiqueta_teste_110x80.pdf"');
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
         
         doc.pipe(res);
         
-        // Adicionar página
         doc.addPage({
             size: [pageWidth, pageHeight],
             margins: { top: 0, bottom: 0, left: 0, right: 0 }
         });
         
-        // Cabeçalho
         doc.rect(0, 0, pageWidth, 20)
            .fill('#4f46e5');
         
@@ -763,29 +760,30 @@ app.get('/api/test-pdf', async (req, res) => {
            .font('Helvetica-Bold')
            .text('ETIQUETA DE TESTE', 15, 5);
         
-        // Conteúdo principal
         doc.fontSize(10)
            .fillColor('#1e293b')
+           .font('Helvetica-Bold')
            .text('Sistema de Etiquetas', 15, 35);
         
         doc.fontSize(9)
            .fillColor('#64748b')
-           .text('Dimensões: 120mm × 80mm', 15, 55);
+           .font('Helvetica-Bold')
+           .text('Dimensões: 110mm × 80mm', 15, 55);
         
         doc.fontSize(9)
            .fillColor('#10b981')
+           .font('Helvetica-Bold')
            .text('✅ PDF gerado com sucesso!', 15, 75);
         
-        // QR Code de teste MAIOR
         try {
-            const qrText = 'ETIQUETA DE TESTE\nDimensões: 120×80mm\nData: ' + new Date().toLocaleDateString('pt-BR');
+            const qrText = 'ETIQUETA DE TESTE\nDimensões: 110×80mm\nData: ' + new Date().toLocaleDateString('pt-BR');
             const qrCode = await QRCode.toBuffer(qrText, {
                 width: 150,
                 margin: 1
             });
             
-            doc.image(qrCode, pageWidth - 60, pageHeight - 60, { // Posição ajustada
-                width: 50, // Aumentado de 40 para 50
+            doc.image(qrCode, pageWidth - 60, pageHeight - 60, {
+                width: 50,
                 height: 50
             });
             
@@ -793,16 +791,16 @@ app.get('/api/test-pdf', async (req, res) => {
             console.log('QR Code não gerado no teste:', qrError.message);
         }
         
-        // Rodapé
-        doc.fontSize(8) // Aumentado
+        doc.fontSize(8)
            .fillColor('#94a3b8')
+           .font('Helvetica-Bold')
            .text(`Teste - ${new Date().toLocaleDateString('pt-BR')}`, 
                  15, 
                  pageHeight - 20);
         
         doc.end();
         
-        console.log('✅ PDF de teste 120×80mm gerado com sucesso');
+        console.log('✅ PDF de teste 110×80mm gerado com sucesso');
         
     } catch (error) {
         console.error('❌ Erro no PDF de teste:', error);
@@ -823,7 +821,7 @@ app.get('/', (req, res) => {
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Sistema de Etiquetas 120×80mm</title>
+                <title>Sistema de Etiquetas 110×80mm</title>
                 <style>
                     body { font-family: Arial; padding: 50px; text-align: center; }
                     .btn { display: inline-block; padding: 12px 24px; margin: 10px; background: #4f46e5; color: white; text-decoration: none; border-radius: 8px; }
@@ -833,12 +831,12 @@ app.get('/', (req, res) => {
             <body>
                 <h1>🏷️ Sistema de Etiquetas</h1>
                 <div class="dimensions">
-                    <strong>📏 Dimensões:</strong> 120mm (altura) × 80mm (largura)
+                    <strong>📏 Dimensões:</strong> 110mm (altura) × 80mm (largura)
                 </div>
                 <p>Backend funcionando!</p>
                 <a href="/api/ping" class="btn">Testar API</a>
                 <a href="/api/create-test" class="btn">Criar Dados Teste</a>
-                <a href="/api/test-pdf" class="btn">Testar PDF 120×80mm</a>
+                <a href="/api/test-pdf" class="btn">Testar PDF 110×80mm</a>
                 <a href="/upload" class="btn">Upload</a>
                 <a href="/generate" class="btn">Gerar Etiquetas</a>
             </body>
@@ -868,10 +866,10 @@ app.get('/generate', (req, res) => {
 // ========== INICIAR SERVIDOR ==========
 app.listen(PORT, () => {
     console.log('\n' + '='.repeat(60));
-    console.log('🚀 SISTEMA DE ETIQUETAS 120×80mm - INICIADO');
+    console.log('🚀 SISTEMA DE ETIQUETAS 110×80mm - INICIADO');
     console.log('='.repeat(60));
     console.log(`✅ Servidor: http://localhost:${PORT}`);
-    console.log(`✅ Dimensões: 120mm altura × 80mm largura`);
+    console.log(`✅ Dimensões: 110mm altura × 80mm largura`);
     console.log(`✅ Teste PDF: http://localhost:${PORT}/api/test-pdf`);
     console.log(`✅ Upload: http://localhost:${PORT}/upload`);
     console.log(`✅ Gerar: http://localhost:${PORT}/generate`);
